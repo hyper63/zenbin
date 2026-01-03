@@ -16,6 +16,7 @@ ZenBin is a lightweight web service that lets you publish HTML documents to uniq
 - **ETag caching** — Efficient caching with `If-None-Match` support
 - **Rate limiting** — Built-in abuse protection
 - **Fast storage** — LMDB for high-performance reads/writes
+- **Page authentication** — Optional password protection or secret URL tokens
 
 ## Quick Start
 
@@ -58,6 +59,7 @@ Content-Type: application/json
 | `title` | No | Page title (metadata) |
 | `encoding` | No | `utf-8` (default) or `base64` |
 | `content_type` | No | Content-Type header (default: `text/html; charset=utf-8`) |
+| `auth` | No | Authentication settings (see [Page Authentication](#page-authentication)) |
 
 **Response:**
 ```json
@@ -186,6 +188,74 @@ curl -X POST http://localhost:3000/v1/pages/encoded \
   -H "Content-Type: application/json" \
   -d "{\"encoding\":\"base64\",\"html\":\"$HTML_BASE64\"}"
 ```
+
+## Page Authentication
+
+Pages are public by default. You can optionally protect pages with password authentication, secret URL tokens, or both.
+
+### Password Protection
+
+Add HTTP Basic Auth to require a password when viewing the page:
+
+```bash
+curl -X POST http://localhost:3000/v1/pages/secret \
+  -H "Content-Type: application/json" \
+  -d '{
+    "html": "<h1>Secret Page</h1>",
+    "auth": { "password": "mypassword123" }
+  }'
+```
+
+Browsers will automatically prompt for the password. With curl:
+
+```bash
+curl -u ":mypassword123" http://localhost:3000/p/secret
+```
+
+### URL Token (Secret Links)
+
+Generate a secret shareable URL that grants access without a password:
+
+```bash
+curl -X POST http://localhost:3000/v1/pages/shared \
+  -H "Content-Type: application/json" \
+  -d '{
+    "html": "<h1>Shared Page</h1>",
+    "auth": { "urlToken": true }
+  }'
+```
+
+Response includes secret URLs:
+
+```json
+{
+  "id": "shared",
+  "url": "http://localhost:3000/p/shared",
+  "secret_url": "http://localhost:3000/p/shared?token=abc123...",
+  "secret_raw_url": "http://localhost:3000/p/shared/raw?token=abc123..."
+}
+```
+
+**Note:** The token is only returned once at creation and cannot be retrieved later.
+
+### Both Methods
+
+Use both password and URL token for maximum flexibility:
+
+```bash
+curl -X POST http://localhost:3000/v1/pages/dual \
+  -H "Content-Type: application/json" \
+  -d '{
+    "html": "<h1>Dual Auth</h1>",
+    "auth": { "password": "mypassword123", "urlToken": true }
+  }'
+```
+
+### Brute-Force Protection
+
+Protected pages have built-in brute-force protection:
+- After 5 failed attempts within 15 minutes, the page is locked for 15 minutes
+- Returns `429 Too Many Requests` with a `Retry-After` header when locked
 
 ## Configuration
 
