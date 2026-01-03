@@ -211,6 +211,69 @@ console.log(data.body); // The actual API response
 - Max request/response size: 5MB
 - Max timeout: 30 seconds
 - Only accessible from ZenBin-hosted pages
+
+## Page Authentication (Optional)
+
+Pages can be optionally protected with authentication. By default, pages are public.
+
+### Password Protection
+
+Add HTTP Basic Auth to your page:
+
+\`\`\`json
+{
+  "html": "<h1>Secret Page</h1>",
+  "auth": {
+    "password": "your-password-here"
+  }
+}
+\`\`\`
+
+Viewers will be prompted for a password by their browser. Minimum password length is 8 characters.
+
+### URL Token
+
+Generate a secret shareable URL:
+
+\`\`\`json
+{
+  "html": "<h1>Shared Page</h1>",
+  "auth": {
+    "urlToken": true
+  }
+}
+\`\`\`
+
+Response includes secret URLs:
+\`\`\`json
+{
+  "id": "my-page",
+  "url": "${config.baseUrl}/p/my-page",
+  "secret_url": "${config.baseUrl}/p/my-page?token=abc123...",
+  "secret_raw_url": "${config.baseUrl}/p/my-page/raw?token=abc123..."
+}
+\`\`\`
+
+### Both Methods
+
+Use both password and URL token:
+
+\`\`\`json
+{
+  "html": "<h1>Dual Auth</h1>",
+  "auth": {
+    "password": "your-password-here",
+    "urlToken": true
+  }
+}
+\`\`\`
+
+### Accessing Protected Pages
+
+- **Password**: Browser prompts automatically, or use \`curl -u ":password" URL\`
+- **URL Token**: Use the secret_url directly
+
+**Note**: Authentication settings cannot be changed after page creation. The URL token is only shown once in the creation response.
 `;
 
 // GET /api/agent - Return agent instructions as markdown

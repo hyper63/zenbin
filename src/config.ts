@@ -25,6 +25,16 @@ export const config = {
   proxyRateLimitMax: parseInt(process.env.PROXY_RATE_LIMIT_MAX || '5', 10),
   proxyRateLimitWindowMs: parseInt(process.env.PROXY_RATE_LIMIT_WINDOW_MS || '60000', 10),
   proxyMaxRedirects: parseInt(process.env.PROXY_MAX_REDIRECTS || '3', 10),
+
+  // Auth
+  auth: {
+    bcryptRounds: parseInt(process.env.AUTH_BCRYPT_ROUNDS || '10', 10),
+    tokenLength: parseInt(process.env.AUTH_TOKEN_LENGTH || '32', 10),
+    minPasswordLength: parseInt(process.env.AUTH_MIN_PASSWORD_LENGTH || '8', 10),
+    maxFailedAttempts: parseInt(process.env.AUTH_MAX_FAILED_ATTEMPTS || '5', 10),
+    failedAttemptWindowMs: parseInt(process.env.AUTH_FAILED_ATTEMPT_WINDOW_MS || '900000', 10), // 15 minutes
+    lockoutDurationMs: parseInt(process.env.AUTH_LOCKOUT_DURATION_MS || '900000', 10), // 15 minutes
+  },
 } as const;
 
 // Validation

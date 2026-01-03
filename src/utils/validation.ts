@@ -5,6 +5,11 @@ export interface ValidationError {
   message: string;
 }
 
+export interface PageAuthInput {
+  password?: string;
+  urlToken?: boolean;
+}
+
 /**
  * Validate a page ID
  */
@@ -74,6 +79,42 @@ export function validatePageBody(body: unknown): ValidationError | null {
       field: 'html', 
       message: `HTML content exceeds maximum size of ${config.maxPayloadSize} bytes` 
     };
+  }
+
+  return null;
+}
+
+/**
+ * Validate auth configuration for a page
+ */
+export function validateAuthInput(auth: unknown): ValidationError | null {
+  if (!auth || typeof auth !== 'object') {
+    return { field: 'auth', message: 'auth must be an object' };
+  }
+
+  const data = auth as Record<string, unknown>;
+
+  // At least one auth method must be specified
+  if (data.password === undefined && data.urlToken === undefined) {
+    return { field: 'auth', message: 'auth must include password and/or urlToken' };
+  }
+
+  // Validate password if provided
+  if (data.password !== undefined) {
+    if (typeof data.password !== 'string') {
+      return { field: 'auth.password', message: 'auth.password must be a string' };
+    }
+    if (data.password.length < config.auth.minPasswordLength) {
+      return { 
+        field: 'auth.password', 
+        message: `auth.password must be at least ${config.auth.minPasswordLength} characters` 
+      };
+    }
+  }
+
+  // Validate urlToken if provided
+  if (data.urlToken !== undefined && typeof data.urlToken !== 'boolean') {
+    return { field: 'auth.urlToken', message: 'auth.urlToken must be a boolean' };
   }
 
   return null;
