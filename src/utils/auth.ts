@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import { config } from '../config.js';
 
 /**
@@ -28,10 +28,15 @@ export function generateUrlToken(): { token: string; hash: string } {
 
 /**
  * Verify a URL token against a stored hash
+ * Uses timing-safe comparison to prevent timing attacks
  */
 export function verifyUrlToken(token: string, hash: string): boolean {
   const tokenHash = createHash('sha256').update(token).digest('hex');
-  return tokenHash === hash;
+  try {
+    return timingSafeEqual(Buffer.from(tokenHash, 'hex'), Buffer.from(hash, 'hex'));
+  } catch {
+    return false;
+  }
 }
 
 /**

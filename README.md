@@ -208,6 +208,12 @@ Configure via environment variables or `.env` file:
 | `PROXY_RATE_LIMIT_MAX` | `5` | Max proxy requests per window |
 | `PROXY_RATE_LIMIT_WINDOW_MS` | `60000` | Proxy rate limit window (ms) |
 | `PROXY_MAX_REDIRECTS` | `3` | Max redirects to follow |
+| `AUTH_BCRYPT_ROUNDS` | `10` | bcrypt cost factor for password hashing |
+| `AUTH_TOKEN_LENGTH` | `32` | URL token length in bytes (64 hex chars) |
+| `AUTH_MIN_PASSWORD_LENGTH` | `8` | Minimum password length |
+| `AUTH_MAX_FAILED_ATTEMPTS` | `5` | Max failed auth attempts before lockout |
+| `AUTH_FAILED_ATTEMPT_WINDOW_MS` | `900000` | Failed attempt tracking window (15 min) |
+| `AUTH_LOCKOUT_DURATION_MS` | `900000` | Lockout duration after max failures (15 min) |
 
 ## Page ID Rules
 
