@@ -28,6 +28,7 @@ Content-Type: application/json
 | \`encoding\` | No | \`"utf-8"\` (default) or \`"base64"\` — specifies how the \`html\` field is encoded |
 | \`title\` | No | Page title (metadata only) |
 | \`content_type\` | No | Content-Type header for the page (default: \`text/html; charset=utf-8\`) |
+| \`auth\` | No | Authentication settings: \`{ password?: string, urlToken?: boolean }\` (see [Page Authentication](#page-authentication-optional)) |
 
 ### URL Path Parameter
 
