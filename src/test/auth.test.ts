@@ -164,7 +164,7 @@ describe('Page Authentication', () => {
     it('should return 401 without auth for protected page', async () => {
       const res = await app.request(`/p/${passwordPageId}`);
       expect(res.status).toBe(401);
-      expect(res.headers.get('WWW-Authenticate')).toBe('Basic realm="ZenBin"');
+      expect(res.headers.get('WWW-Authenticate')).toBe(`Basic realm="ZenBin-${passwordPageId}"`);
     });
 
     it('should return 401 with wrong password', async () => {

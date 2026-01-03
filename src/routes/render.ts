@@ -64,7 +64,7 @@ async function verifyPageAuth(c: Context, page: Page): Promise<Response | null> 
 
   if (!basicAuth) {
     // No auth provided - prompt for password
-    c.header('WWW-Authenticate', 'Basic realm="ZenBin"');
+    c.header('WWW-Authenticate', `Basic realm="ZenBin-${pageId}"`);
     return c.json({ error: 'Authentication required' }, 401);
   }
 
@@ -79,7 +79,7 @@ async function verifyPageAuth(c: Context, page: Page): Promise<Response | null> 
 
   // Auth failed
   recordFailedAttempt(pageId);
-  c.header('WWW-Authenticate', 'Basic realm="ZenBin"');
+  c.header('WWW-Authenticate', `Basic realm="ZenBin-${pageId}"`);
   return c.json({ error: 'Invalid credentials' }, 401);
 }
 
