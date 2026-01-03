@@ -1,6 +1,12 @@
 import { open, Database } from 'lmdb';
 import { config } from '../config.js';
 
+// Page authentication data
+export interface PageAuth {
+  passwordHash?: string;   // bcrypt hash
+  urlTokenHash?: string;   // SHA-256 hash (hex)
+}
+
 // Page data model
 export interface Page {
   id: string;
@@ -11,6 +17,7 @@ export interface Page {
   etag: string;
   created_at: string;
   updated_at: string;
+  auth?: PageAuth;  // Optional - undefined means public page
 }
 
 // Result type for save operations
@@ -45,6 +52,7 @@ export async function savePage(
     encoding?: 'utf-8' | 'base64';
     content_type?: string;
     title?: string;
+    auth?: { passwordHash?: string; urlTokenHash?: string };
   },
   etag: string
 ): Promise<SaveResult> {
@@ -61,6 +69,7 @@ export async function savePage(
     etag,
     created_at: existing?.created_at || now,
     updated_at: now,
+    auth: data.auth,
   };
 
   await db.put(id, page);
