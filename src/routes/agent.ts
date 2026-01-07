@@ -126,8 +126,8 @@ curl -X POST ${config.baseUrl}/v1/pages/styled \\
 
 1. **Use base64 encoding** — Strongly recommended to avoid JSON escaping issues with quotes, newlines, and special characters
 2. **Generate complete HTML documents** — Include \`<!DOCTYPE html>\`, \`<html>\`, \`<head>\`, and \`<body>\` tags
-3. **Use inline styles** — External stylesheets may be blocked; use \`<style>\` tags or inline \`style\` attributes
-4. **Keep pages self-contained** — All CSS and JS should be inline
+3. **External resources supported** — You can use external HTTPS stylesheets, scripts from CDNs (unpkg, cdnjs), Google Fonts, and embed videos (YouTube, Vimeo)
+4. **Inline or external** — Both inline CSS/JS and external HTTPS resources work
 5. **Use unique IDs** — Choose descriptive page IDs (e.g., \`report-2024-01-15\`, \`chart-demo-v2\`)
 
 ## Limits

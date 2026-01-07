@@ -11,11 +11,13 @@ const render = new Hono();
 // Security headers for sandboxed rendering
 const SECURITY_HEADERS = {
   'Content-Security-Policy': [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-    "style-src 'self' 'unsafe-inline'",
+    "default-src 'self' https:",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
+    "style-src 'self' 'unsafe-inline' https:",
     "img-src 'self' data: blob: https:",
-    "font-src 'self' data:",
+    "font-src 'self' data: https:",
+    "media-src 'self' https:",
+    "frame-src 'self' https:",
     "connect-src *", // Allow hosted apps to make fetch/WebSocket requests
     "frame-ancestors 'none'",
     "base-uri 'self'",
