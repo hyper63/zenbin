@@ -8,6 +8,9 @@ const getHtml = () => `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
   <title>ZenBin — Headless HTML Sandbox</title>
   <style>
     * {
@@ -17,17 +20,18 @@ const getHtml = () => `<!DOCTYPE html>
     }
     
     :root {
-      --bg: #0a0a0a;
-      --surface: #141414;
-      --border: #2a2a2a;
-      --text: #e5e5e5;
-      --text-muted: #888;
-      --accent: #10b981;
-      --accent-dim: #065f46;
+      --bg: #f9fafb;
+      --surface: #ffffff;
+      --border: #e1ebf3;
+      --text: #151c28;
+      --text-muted: #6c7782;
+      --accent: #2c6a9b;
+      --accent-dim: #dae8f3;
     }
     
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 300;
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
@@ -52,7 +56,7 @@ const getHtml = () => `<!DOCTYPE html>
     
     h1 {
       font-size: 2.5rem;
-      font-weight: 700;
+      font-weight: 600;
       letter-spacing: -0.02em;
       margin-bottom: 0.5rem;
     }
@@ -60,6 +64,7 @@ const getHtml = () => `<!DOCTYPE html>
     .tagline {
       color: var(--text-muted);
       font-size: 1.25rem;
+      font-weight: 400;
     }
     
     .description {
@@ -68,6 +73,7 @@ const getHtml = () => `<!DOCTYPE html>
       border-radius: 12px;
       padding: 2rem;
       margin-bottom: 3rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     
     .description p {
@@ -98,6 +104,7 @@ const getHtml = () => `<!DOCTYPE html>
     
     h2 {
       font-size: 1.5rem;
+      font-weight: 500;
       margin-bottom: 1.5rem;
       color: var(--text);
     }
@@ -137,8 +144,8 @@ const getHtml = () => `<!DOCTYPE html>
     }
     
     .method.get {
-      background: #1e3a5f;
-      color: #60a5fa;
+      background: #dbeafe;
+      color: #1e5a9e;
     }
     
     .path {
@@ -154,7 +161,7 @@ const getHtml = () => `<!DOCTYPE html>
     }
     
     .code-block {
-      background: #0d0d0d;
+      background: #f1f5f9;
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 1.25rem;
@@ -174,7 +181,7 @@ const getHtml = () => `<!DOCTYPE html>
     }
     
     .code-block .string {
-      color: #a5d6ff;
+      color: #2a6e3f;
     }
     
     .try-it {
@@ -184,6 +191,7 @@ const getHtml = () => `<!DOCTYPE html>
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     
     .try-it p {
