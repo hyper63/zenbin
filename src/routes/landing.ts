@@ -241,6 +241,7 @@ const getHtml = () => `<!DOCTYPE html>
       </p>
       <div class="features">
         <div class="feature">Instant publishing</div>
+        <div class="feature">Markdown support</div>
         <div class="feature">No signup required</div>
         <div class="feature">Sandboxed rendering</div>
         <div class="feature">ETag caching</div>
@@ -283,6 +284,16 @@ const getHtml = () => `<!DOCTYPE html>
       <div class="endpoint">
         <div class="endpoint-header">
           <span class="method get">GET</span>
+          <span class="path">/p/{id}/md</span>
+        </div>
+        <div class="endpoint-desc">
+          Fetch the markdown source content.
+        </div>
+      </div>
+      
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method get">GET</span>
           <span class="path">/api/agent</span>
         </div>
         <div class="endpoint-desc">
@@ -296,13 +307,14 @@ const getHtml = () => `<!DOCTYPE html>
       <div class="code-block"><code><span class="comment"># Publish a page</span>
 curl -X POST ${config.baseUrl}/v1/pages/hello \\
   -H <span class="string">"Content-Type: application/json"</span> \\
-  -d <span class="string">'{"html":"&lt;h1&gt;Hello World&lt;/h1&gt;"}'</span>
+  -d <span class="string">'{"html":"&lt;h1&gt;Hello World&lt;/h1&gt;", "markdown":"# Hello World"}'</span>
 
 <span class="comment"># Response</span>
 {
   "id": "hello",
   "url": "${config.baseUrl}/p/hello",
-  "raw_url": "${config.baseUrl}/p/hello/raw"
+  "raw_url": "${config.baseUrl}/p/hello/raw",
+  "markdown_url": "${config.baseUrl}/p/hello/md"
 }</code></div>
     </section>
     

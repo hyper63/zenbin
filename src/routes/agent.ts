@@ -24,8 +24,10 @@ Content-Type: application/json
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| \`html\` | Yes | The HTML content (plain text or base64-encoded) |
+| \`html\` | No* | The HTML content (plain text or base64-encoded). *At least one of \`html\` or \`markdown\` is required. |
+| \`markdown\` | No* | Markdown source content (plain text or base64-encoded). *At least one of \`html\` or \`markdown\` is required. |
 | \`encoding\` | No | \`"utf-8"\` (default) or \`"base64"\` — specifies how the \`html\` field is encoded |
+| \`markdown_encoding\` | No | \`"utf-8"\` (default) or \`"base64"\` — specifies how the \`markdown\` field is encoded |
 | \`title\` | No | Page title (metadata only) |
 | \`content_type\` | No | Content-Type header for the page (default: \`text/html; charset=utf-8\`) |
 | \`auth\` | No | Authentication settings: \`{ password?: string, urlToken?: boolean }\` (see [Page Authentication](#page-authentication-optional)) |
@@ -45,12 +47,14 @@ Content-Type: application/json
   "id": "my-page",
   "url": "${config.baseUrl}/p/my-page",
   "raw_url": "${config.baseUrl}/p/my-page/raw",
+  "markdown_url": "${config.baseUrl}/p/my-page/md",
   "etag": "\"...\""
 }
 \`\`\`
 
 - \`url\` — View the rendered page in a browser
 - \`raw_url\` — Fetch the raw HTML content
+- \`markdown_url\` — Fetch the markdown source (only included when markdown is provided)
 
 **Error: ID Already Taken (409 Conflict):**
 
@@ -140,8 +144,52 @@ curl -X POST ${config.baseUrl}/v1/pages/styled \\
 
 After publishing, the page is available at:
 
-- **Rendered:** \`${config.baseUrl}/p/{id}\`
+- **Rendered HTML:** \`${config.baseUrl}/p/{id}\`
 - **Raw HTML:** \`${config.baseUrl}/p/{id}/raw\`
+- **Markdown source:** \`${config.baseUrl}/p/{id}/md\`
+
+### Markdown Retrieval Options
+
+You can retrieve markdown in three ways:
+
+1. **Dedicated endpoint:** \`GET /p/{id}/md\` — Returns markdown with \`Content-Type: text/markdown\`
+2. **Content negotiation:** \`GET /p/{id}\` with \`Accept: text/markdown\` header
+3. **Markdown-only pages:** If a page has markdown but no HTML, \`GET /p/{id}\` automatically returns markdown
+
+### Example with Both HTML and Markdown
+
+\`\`\`bash
+curl -X POST ${config.baseUrl}/v1/pages/article \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "html": "<!DOCTYPE html><html><head><style>body{font-family:system-ui;max-width:700px;margin:0 auto;padding:2rem}</style></head><body><h1>My Article</h1><p>Content here.</p></body></html>",
+    "markdown": "# My Article\\n\\nContent here.",
+    "title": "My Article"
+  }'
+\`\`\`
+
+Response:
+\`\`\`json
+{
+  "id": "article",
+  "url": "${config.baseUrl}/p/article",
+  "raw_url": "${config.baseUrl}/p/article/raw",
+  "markdown_url": "${config.baseUrl}/p/article/md",
+  "etag": "\"...\""
+}
+\`\`\`
+
+### Example: Markdown-Only Page
+
+\`\`\`bash
+curl -X POST ${config.baseUrl}/v1/pages/notes \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "markdown": "# Notes\\n\\n- Item 1\\n- Item 2\\n- Item 3"
+  }'
+\`\`\`
+
+For markdown-only pages, both \`/p/{id}\` and \`/p/{id}/md\` return the markdown content.
 
 ## Making External API Calls (Proxy)
 
@@ -252,6 +300,14 @@ Response includes secret URLs:
   "url": "${config.baseUrl}/p/my-page",
   "secret_url": "${config.baseUrl}/p/my-page?token=abc123...",
   "secret_raw_url": "${config.baseUrl}/p/my-page/raw?token=abc123..."
+}
+\`\`\`
+
+If the page has markdown, the response also includes \`secret_markdown_url\`:
+
+\`\`\`json
+{
+  "secret_markdown_url": "${config.baseUrl}/p/my-page/md?token=abc123..."
 }
 \`\`\`
 

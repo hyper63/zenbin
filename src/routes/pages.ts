@@ -2,14 +2,16 @@ import { Hono } from 'hono';
 import { config } from '../config.js';
 import { savePage, getPage } from '../storage/db.js';
 import { generateEtag } from '../utils/etag.js';
-import { validateId, validatePageBody, decodeHtml, validateAuthInput } from '../utils/validation.js';
+import { validateId, validatePageBody, decodeHtml, decodeMarkdown, validateAuthInput } from '../utils/validation.js';
 import { hashPassword, generateUrlToken } from '../utils/auth.js';
 
 const pages = new Hono();
 
 interface CreatePageBody {
-  html: string;
+  html?: string;
+  markdown?: string;
   encoding?: 'utf-8' | 'base64';
+  markdown_encoding?: 'utf-8' | 'base64';
   content_type?: string;
   title?: string;
   auth?: {
@@ -55,11 +57,17 @@ pages.post('/:id', async (c) => {
     return c.json({ error: `Page ID "${id}" is already taken` }, 409);
   }
 
-  // Decode HTML if base64 encoded
-  const decodedHtml = decodeHtml(body.html, body.encoding);
+  // Decode HTML if provided
+  const decodedHtml = body.html ? decodeHtml(body.html, body.encoding) : undefined;
 
-  // Generate ETag from decoded content
-  const etag = generateEtag(decodedHtml);
+  // Decode markdown if provided
+  const decodedMarkdown = body.markdown 
+    ? decodeMarkdown(body.markdown, body.markdown_encoding || body.encoding) 
+    : undefined;
+
+  // Generate ETag from combined content
+  const etagContent = (decodedHtml || '') + (decodedMarkdown || '');
+  const etag = generateEtag(etagContent);
 
   // Process auth if provided
   let authData: { passwordHash?: string; urlTokenHash?: string } | undefined;
@@ -83,8 +91,9 @@ pages.post('/:id', async (c) => {
   const { page, created } = await savePage(
     id,
     {
-      html: decodedHtml, // Store decoded HTML
-      encoding: 'utf-8', // Always store as utf-8
+      html: decodedHtml,
+      markdown: decodedMarkdown,
+      encoding: 'utf-8',
       content_type: body.content_type,
       title: body.title,
       auth: authData,
@@ -101,10 +110,18 @@ pages.post('/:id', async (c) => {
     etag: page.etag,
   };
 
+  // Add markdown URL if markdown was provided
+  if (page.markdown) {
+    response.markdown_url = `${baseUrl}/p/${page.id}/md`;
+  }
+
   // Add secret URLs if token was generated
   if (urlToken) {
     response.secret_url = `${baseUrl}/p/${page.id}?token=${urlToken}`;
     response.secret_raw_url = `${baseUrl}/p/${page.id}/raw?token=${urlToken}`;
+    if (page.markdown) {
+      response.secret_markdown_url = `${baseUrl}/p/${page.id}/md?token=${urlToken}`;
+    }
   }
 
   c.header('ETag', page.etag);

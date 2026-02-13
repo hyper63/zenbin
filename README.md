@@ -9,8 +9,10 @@ ZenBin is a lightweight web service that lets you publish HTML documents to uniq
 ## Features
 
 - **Simple API** — Store HTML by ID with a single POST request
+- **Markdown support** — Store markdown source alongside HTML, retrieve via `/md` endpoint or content negotiation
 - **Instant rendering** — View pages at `/p/{id}` in any browser
 - **Raw access** — Fetch original HTML at `/p/{id}/raw`
+- **Markdown endpoint** — Fetch markdown source at `/p/{id}/md`
 - **Proxy endpoint** — Make external API calls from hosted pages (CORS bypass)
 - **Safe by default** — Sandboxed rendering with restrictive security headers
 - **ETag caching** — Efficient caching with `If-None-Match` support
@@ -47,17 +49,21 @@ Content-Type: application/json
 ```json
 {
   "html": "<!doctype html><html><body>Hello World</body></html>",
+  "markdown": "# Hello World\n\nThis is the markdown source.",
   "title": "My Page",
   "encoding": "utf-8",
+  "markdown_encoding": "utf-8",
   "content_type": "text/html; charset=utf-8"
 }
 ```
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `html` | Yes | HTML content (string) |
+| `html` | No* | HTML content (string). *At least one of `html` or `markdown` is required. |
+| `markdown` | No* | Markdown source content (string). *At least one of `html` or `markdown` is required. |
 | `title` | No | Page title (metadata) |
-| `encoding` | No | `utf-8` (default) or `base64` |
+| `encoding` | No | `utf-8` (default) or `base64` for the `html` field |
+| `markdown_encoding` | No | `utf-8` (default) or `base64` for the `markdown` field |
 | `content_type` | No | Content-Type header (default: `text/html; charset=utf-8`) |
 | `auth` | No | Authentication settings (see [Page Authentication](#page-authentication)) |
 
@@ -67,12 +73,14 @@ Content-Type: application/json
   "id": "my-page",
   "url": "http://localhost:3000/p/my-page",
   "raw_url": "http://localhost:3000/p/my-page/raw",
+  "markdown_url": "http://localhost:3000/p/my-page/md",
   "etag": "\"abc123...\""
 }
 ```
 
 - Returns `201 Created` for new pages
 - Returns `200 OK` when replacing existing pages
+- `markdown_url` is only included when `markdown` is provided
 
 ### View a Page
 
@@ -89,6 +97,25 @@ GET /p/{id}/raw
 ```
 
 Returns the raw HTML as `text/plain` with a `Content-Disposition` header for downloading.
+
+### Fetch Markdown Source
+
+```bash
+GET /p/{id}/md
+```
+
+Returns the markdown source as `text/markdown`. Returns `404` if the page has no markdown content.
+
+Alternatively, request markdown via content negotiation:
+
+```bash
+GET /p/{id}
+Accept: text/markdown
+```
+
+### Markdown-Only Pages
+
+If a page is created with only markdown (no HTML), `GET /p/{id}` automatically returns the markdown content with `Content-Type: text/markdown`.
 
 ### Health Check
 
@@ -189,6 +216,39 @@ curl -X POST http://localhost:3000/v1/pages/encoded \
   -d "{\"encoding\":\"base64\",\"html\":\"$HTML_BASE64\"}"
 ```
 
+### Page with HTML and Markdown
+
+```bash
+curl -X POST http://localhost:3000/v1/pages/article \
+  -H "Content-Type: application/json" \
+  -d '{
+    "html": "<!DOCTYPE html><html><head><style>body{font-family:system-ui;max-width:700px;margin:0 auto;padding:2rem}</style></head><body><h1>My Article</h1><p>Content here.</p></body></html>",
+    "markdown": "# My Article\n\nContent here.",
+    "title": "My Article"
+  }'
+```
+
+Response includes markdown URL:
+```json
+{
+  "id": "article",
+  "url": "http://localhost:3000/p/article",
+  "raw_url": "http://localhost:3000/p/article/raw",
+  "markdown_url": "http://localhost:3000/p/article/md",
+  "etag": "\"...\""
+}
+```
+
+### Markdown-only page
+
+```bash
+curl -X POST http://localhost:3000/v1/pages/notes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "markdown": "# Notes\n\n- Item 1\n- Item 2\n- Item 3"
+  }'
+```
+
 ## Page Authentication
 
 Pages are public by default. You can optionally protect pages with password authentication, secret URL tokens, or both.
@@ -233,6 +293,14 @@ Response includes secret URLs:
   "url": "http://localhost:3000/p/shared",
   "secret_url": "http://localhost:3000/p/shared?token=abc123...",
   "secret_raw_url": "http://localhost:3000/p/shared/raw?token=abc123..."
+}
+```
+
+If the page has markdown, the response also includes `secret_markdown_url`:
+
+```json
+{
+  "secret_markdown_url": "http://localhost:3000/p/shared/md?token=abc123..."
 }
 ```
 

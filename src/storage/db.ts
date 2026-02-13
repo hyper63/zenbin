@@ -11,6 +11,7 @@ export interface PageAuth {
 export interface Page {
   id: string;
   html: string;
+  markdown?: string;
   encoding: 'utf-8' | 'base64';
   content_type: string;
   title?: string;
@@ -48,7 +49,8 @@ export function getDatabase(): Database<Page, string> {
 export async function savePage(
   id: string,
   data: {
-    html: string;
+    html?: string;
+    markdown?: string;
     encoding?: 'utf-8' | 'base64';
     content_type?: string;
     title?: string;
@@ -62,7 +64,8 @@ export async function savePage(
 
   const page: Page = {
     id,
-    html: data.html,
+    html: data.html || '',
+    markdown: data.markdown,
     encoding: data.encoding || 'utf-8',
     content_type: data.content_type || 'text/html; charset=utf-8',
     title: data.title,

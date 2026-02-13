@@ -1,7 +1,7 @@
 import { Hono, Context } from 'hono';
 import { getPage } from '../storage/db.js';
 import { validateId } from '../utils/validation.js';
-import { etagMatches } from '../utils/etag.js';
+import { generateEtag, etagMatches } from '../utils/etag.js';
 import { verifyPassword, verifyUrlToken, parseBasicAuth } from '../utils/auth.js';
 import { checkAuthRateLimit, recordFailedAttempt, resetAuthAttempts } from '../middleware/authRateLimit.js';
 import type { Page } from '../storage/db.js';
@@ -89,25 +89,58 @@ async function verifyPageAuth(c: Context, page: Page): Promise<Response | null> 
 render.get('/:id', async (c) => {
   const id = c.req.param('id');
 
-  // Validate ID
   const idError = validateId(id);
   if (idError) {
     return c.json({ error: idError.message }, 400);
   }
 
-  // Get page from database
   const page = getPage(id);
   if (!page) {
     return c.json({ error: 'Page not found' }, 404);
   }
 
-  // Check authentication
   const authResponse = await verifyPageAuth(c, page);
   if (authResponse) {
     return authResponse;
   }
 
-  // Check If-None-Match for caching
+  // Check Accept header for markdown
+  const acceptHeader = c.req.header('Accept') || '';
+  const wantsMarkdown = acceptHeader.includes('text/markdown');
+
+  // If client wants markdown and page has it, return markdown
+  if (wantsMarkdown && page.markdown) {
+    const mdEtag = generateEtag(page.markdown);
+    const ifNoneMatch = c.req.header('If-None-Match');
+    if (etagMatches(ifNoneMatch, mdEtag)) {
+      return c.body(null, 304);
+    }
+
+    c.header('Content-Type', 'text/markdown; charset=utf-8');
+    c.header('Content-Disposition', `inline; filename="${id}.md"`);
+    c.header('ETag', mdEtag);
+    c.header('Cache-Control', 'public, max-age=0, must-revalidate');
+
+    return c.body(page.markdown);
+  }
+
+  // If no HTML but has markdown, return markdown
+  if (!page.html && page.markdown) {
+    const mdEtag = generateEtag(page.markdown);
+    const ifNoneMatch = c.req.header('If-None-Match');
+    if (etagMatches(ifNoneMatch, mdEtag)) {
+      return c.body(null, 304);
+    }
+
+    c.header('Content-Type', 'text/markdown; charset=utf-8');
+    c.header('Content-Disposition', `inline; filename="${id}.md"`);
+    c.header('ETag', mdEtag);
+    c.header('Cache-Control', 'public, max-age=0, must-revalidate');
+
+    return c.body(page.markdown);
+  }
+
+  // Check If-None-Match for caching HTML
   const ifNoneMatch = c.req.header('If-None-Match');
   if (etagMatches(ifNoneMatch, page.etag)) {
     return c.body(null, 304);
@@ -118,13 +151,48 @@ render.get('/:id', async (c) => {
     c.header(key, value);
   }
 
-  // Set caching headers
   c.header('ETag', page.etag);
   c.header('Cache-Control', 'public, max-age=0, must-revalidate');
-
-  // Return HTML
   c.header('Content-Type', page.content_type || 'text/html; charset=utf-8');
+
   return c.body(page.html);
+});
+
+// GET /p/:id/md - Return markdown source
+render.get('/:id/md', async (c) => {
+  const id = c.req.param('id');
+
+  const idError = validateId(id);
+  if (idError) {
+    return c.json({ error: idError.message }, 400);
+  }
+
+  const page = getPage(id);
+  if (!page) {
+    return c.json({ error: 'Page not found' }, 404);
+  }
+
+  const authResponse = await verifyPageAuth(c, page);
+  if (authResponse) {
+    return authResponse;
+  }
+
+  if (!page.markdown) {
+    return c.json({ error: 'Page has no markdown content' }, 404);
+  }
+
+  const mdEtag = generateEtag(page.markdown);
+  const ifNoneMatch = c.req.header('If-None-Match');
+  if (etagMatches(ifNoneMatch, mdEtag)) {
+    return c.body(null, 304);
+  }
+
+  c.header('Content-Type', 'text/markdown; charset=utf-8');
+  c.header('Content-Disposition', `inline; filename="${id}.md"`);
+  c.header('ETag', mdEtag);
+  c.header('Cache-Control', 'public, max-age=0, must-revalidate');
+
+  return c.body(page.markdown);
 });
 
 // GET /p/:id/raw - Fetch raw HTML

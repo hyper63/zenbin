@@ -39,16 +39,61 @@ export function validatePageBody(body: unknown): ValidationError | null {
 
   const data = body as Record<string, unknown>;
 
-  // Validate html field
-  if (!data.html || typeof data.html !== 'string') {
-    return { field: 'html', message: 'html field is required and must be a string' };
-  }
-
   // Validate encoding if provided
   if (data.encoding !== undefined) {
     if (data.encoding !== 'utf-8' && data.encoding !== 'base64') {
       return { field: 'encoding', message: 'encoding must be "utf-8" or "base64"' };
     }
+  }
+
+  // Validate markdown field if provided
+  let markdownSize = 0;
+  if (data.markdown !== undefined) {
+    if (typeof data.markdown !== 'string') {
+      return { field: 'markdown', message: 'markdown must be a string' };
+    }
+    if (data.markdown_encoding === 'base64') {
+      try {
+        const decoded = Buffer.from(data.markdown as string, 'base64');
+        markdownSize = decoded.length;
+      } catch {
+        return { field: 'markdown', message: 'Invalid base64 encoding for markdown' };
+      }
+    } else {
+      markdownSize = Buffer.byteLength(data.markdown as string, 'utf-8');
+    }
+  }
+
+  // Validate html field if provided
+  let htmlSize = 0;
+  if (data.html !== undefined) {
+    if (typeof data.html !== 'string') {
+      return { field: 'html', message: 'html must be a string' };
+    }
+    if (data.encoding === 'base64') {
+      try {
+        const decoded = Buffer.from(data.html as string, 'base64');
+        htmlSize = decoded.length;
+      } catch {
+        return { field: 'html', message: 'Invalid base64 encoding' };
+      }
+    } else {
+      htmlSize = Buffer.byteLength(data.html as string, 'utf-8');
+    }
+  }
+
+  // At least one of html or markdown must be provided
+  if (!data.html && !data.markdown) {
+    return { field: 'body', message: 'At least one of html or markdown is required' };
+  }
+
+  // Check combined size
+  const totalSize = htmlSize + markdownSize;
+  if (totalSize > config.maxPayloadSize) {
+    return { 
+      field: 'body', 
+      message: `Combined content size exceeds maximum of ${config.maxPayloadSize} bytes` 
+    };
   }
 
   // Validate content_type if provided
@@ -61,24 +106,11 @@ export function validatePageBody(body: unknown): ValidationError | null {
     return { field: 'title', message: 'title must be a string' };
   }
 
-  // Calculate actual HTML size (decode base64 if needed)
-  let htmlSize: number;
-  if (data.encoding === 'base64') {
-    try {
-      const decoded = Buffer.from(data.html as string, 'base64');
-      htmlSize = decoded.length;
-    } catch {
-      return { field: 'html', message: 'Invalid base64 encoding' };
+  // Validate markdown_encoding if provided
+  if (data.markdown_encoding !== undefined) {
+    if (data.markdown_encoding !== 'utf-8' && data.markdown_encoding !== 'base64') {
+      return { field: 'markdown_encoding', message: 'markdown_encoding must be "utf-8" or "base64"' };
     }
-  } else {
-    htmlSize = Buffer.byteLength(data.html as string, 'utf-8');
-  }
-
-  if (htmlSize > config.maxPayloadSize) {
-    return { 
-      field: 'html', 
-      message: `HTML content exceeds maximum size of ${config.maxPayloadSize} bytes` 
-    };
   }
 
   return null;
@@ -128,6 +160,16 @@ export function decodeHtml(html: string, encoding: 'utf-8' | 'base64' = 'utf-8')
     return Buffer.from(html, 'base64').toString('utf-8');
   }
   return html;
+}
+
+/**
+ * Decode markdown content from request body
+ */
+export function decodeMarkdown(markdown: string, encoding: 'utf-8' | 'base64' = 'utf-8'): string {
+  if (encoding === 'base64') {
+    return Buffer.from(markdown, 'base64').toString('utf-8');
+  }
+  return markdown;
 }
 
 /**
