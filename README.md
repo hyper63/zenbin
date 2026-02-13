@@ -385,7 +385,7 @@ ZenBin includes a `render.yaml` Blueprint for easy deployment to [Render.com](ht
 1. Fork or clone this repository
 2. Create a new **Blueprint** in Render Dashboard
 3. Connect your repository
-4. Set the `BASE_URL` environment variable to your Render URL (e.g., `https://zenbin.onrender.com`)
+4. Set the `BASE_URL` environment variable to your Render URL (e.g., `https://zenbin.org`)
 5. Deploy
 
 ### What's Included

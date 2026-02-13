@@ -15,7 +15,7 @@ services:
       - key: HOST
         value: 0.0.0.0
       - key: BASE_URL
-        value: https://zenbin.onrender.com
+        value: https://zenbin.org
       - key: LMDB_PATH
         value: /var/data/zenbin.lmdb
       - key: MAX_PAYLOAD_SIZE
