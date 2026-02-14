@@ -24,6 +24,8 @@ services:
         value: 60000
       - key: RATE_LIMIT_MAX_REQUESTS
         value: 100
+      - key: ZENBIN_JWT_SECRET
+        value: change-me-in-production
     disk:
       name: zenbin-data
       mountPath: /var/data
