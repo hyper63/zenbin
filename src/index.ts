@@ -11,6 +11,7 @@ import { landing } from './routes/landing.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { proxyRateLimit } from './middleware/proxyRateLimit.js';
 import { proxy } from './routes/proxy.js';
+import { verifyApiKey } from './middleware/verifyApiKey.js';
 
 const app = new Hono();
 
@@ -18,6 +19,10 @@ const app = new Hono();
 app.use('*', logger());
 app.use('*', cors());
 app.use('*', rateLimit);
+
+// API Key verification (must be after rateLimit to avoid abuse)
+app.use('/v1/*', verifyApiKey);
+app.use('/api/proxy/*', verifyApiKey);
 
 // Landing page
 app.route('/', landing);
@@ -92,6 +97,10 @@ Configuration:
   Max payload size: ${config.maxPayloadSize} bytes
   Rate limit: ${config.rateLimitMaxRequests} requests per ${config.rateLimitWindowMs / 1000}s
   Proxy rate limit: ${config.proxyRateLimitMax} requests per ${config.proxyRateLimitWindowMs / 1000}s
+
+API Key Configuration:
+  JWT Secret: ${process.env.ZENBIN_JWT_SECRET ? 'configured' : 'NOT SET (using default)'}
+  Free tier: 10 requests/month
 `);
     });
 
