@@ -1,4 +1,4 @@
-import { Hono, Context } from 'hono';
+import { Hono, Context, Next } from 'hono';
 import { config } from '../config.js';
 import { getPage, getSubdomain } from '../storage/db.js';
 import { validateId } from '../utils/validation.js';
@@ -271,9 +271,8 @@ async function verifyPageAuth(c: Context, page: Page): Promise<Response | null> 
 }
 
 // Middleware to extract subdomain from host header
-const extractSubdomain = (c: Context, next: () => Promise<void>) => {
+const extractSubdomain = async (c: Context, next: Next) => {
   const host = c.req.header('host') || '';
-  const baseDomain = config.subdomains.baseDomain;
   
   // Check if this is a subdomain request
   // host format: subdomain.zenbin.io or just zenbin.io
@@ -291,17 +290,30 @@ const extractSubdomain = (c: Context, next: () => Promise<void>) => {
     }
   }
   
-  return next();
+  await next();
 };
 
-// GET /* - Render subdomain page
-subdomainRender.get('/*', extractSubdomain, async (c) => {
+// Check if this is a subdomain request - if not, skip to next route
+const requireSubdomain = async (c: Context, next: Next) => {
+  const subdomain = c.get('subdomain');
+  if (!subdomain) {
+    // Not a subdomain request - call next() to let other routes handle it
+    return next();
+  }
+  // Is a subdomain request - continue to the route handlers
+  await next();
+};
+
+// Apply middleware to all routes
+subdomainRender.use('*', extractSubdomain, requireSubdomain);
+
+// GET /* - Render subdomain page (only handles subdomain requests)
+subdomainRender.get('/*', async (c) => {
   const subdomain = c.get('subdomain');
   
-  // If no subdomain, this middleware shouldn't have caught this
-  // But let's handle it gracefully
+  // Double-check we have a subdomain (should always be true due to requireSubdomain middleware)
   if (!subdomain) {
-    return c.redirect(config.baseUrl, 302);
+    return c.notFound();
   }
   
   // Check if subdomain exists

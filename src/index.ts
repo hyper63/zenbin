@@ -66,15 +66,17 @@ app.route('/api/proxy', proxy);
 // Well-known endpoints (for agent discoverability)
 app.route('/.well-known', wellKnown);
 
-// Subdomain render routes (must come before /p routes)
-// This handles: {subdomain}.{domain}/* paths
-app.route('/', subdomainRender);
-
-// Landing page (only for main domain)
+// Landing page (main domain only - must come before subdomain routes)
+// This catches the root path for the main domain
 app.route('/', landing);
 
 // Render routes (for /p/{id} paths - backwards compatibility)
+// Must come before subdomain routes so /p/* doesn't get caught by subdomain handler
 app.route('/p', render);
+
+// Subdomain render routes (catches all other paths for subdomain requests)
+// Should only handle requests when there's an actual subdomain set in context
+app.route('/', subdomainRender);
 
 // 404 handler
 app.notFound((c) => {
