@@ -103,3 +103,8 @@ export async function closeDatabase(): Promise<void> {
     await db.close();
   }
 }
+
+export function getPageCount(): number {
+  const db = getDatabase();
+  return db.getKeys().asArray.length;
+}

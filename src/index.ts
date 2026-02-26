@@ -8,6 +8,7 @@ import { pages } from './routes/pages.js';
 import { render } from './routes/render.js';
 import { agent } from './routes/agent.js';
 import { landing } from './routes/landing.js';
+import { stats } from './routes/stats.js';
 import { wellKnown } from './routes/wellKnown.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { proxyRateLimit } from './middleware/proxyRateLimit.js';
@@ -33,6 +34,7 @@ app.get('/health', (c) => {
 
 // API routes
 app.route('/v1/pages', pages);
+app.route('/v1/stats', stats);
 
 // Agent instructions
 app.route('/api/agent', agent);
@@ -84,15 +86,16 @@ async function main() {
 Server running at http://${info.address}:${info.port}
 
 Endpoints:
-  GET  /               - Landing page
-  GET  /.well-known/skill.md - Agent instructions
-  POST /v1/pages/{id}  - Create or replace a page
-  GET  /p/{id}         - Render page in browser
-  GET  /p/{id}/raw     - Fetch raw HTML
-  GET  /p/{id}/md      - Fetch markdown source
-  GET  /api/agent      - Agent instructions (markdown)
-  POST /api/proxy       - Proxy external requests (CORS bypass)
-  GET  /health         - Health check
+  GET  /                        - Landing page
+  GET  /.well-known/skill.md    - Agent instructions
+  GET  /v1/stats                - Site statistics
+  POST /v1/pages/{id}           - Create or replace a page
+  GET  /p/{id}                  - Render page in browser
+  GET  /p/{id}/raw              - Fetch raw HTML
+  GET  /p/{id}/md               - Fetch markdown source
+  GET  /api/agent               - Agent instructions (markdown)
+  POST /api/proxy               - Proxy external requests (CORS bypass)
+  GET  /health                  - Health check
 
 Configuration:
   Max payload size: ${config.maxPayloadSize} bytes
