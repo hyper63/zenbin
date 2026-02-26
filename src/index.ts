@@ -8,6 +8,7 @@ import { pages } from './routes/pages.js';
 import { render } from './routes/render.js';
 import { agent } from './routes/agent.js';
 import { landing } from './routes/landing.js';
+import { wellKnown } from './routes/wellKnown.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { proxyRateLimit } from './middleware/proxyRateLimit.js';
 import { proxy } from './routes/proxy.js';
@@ -21,6 +22,9 @@ app.use('*', rateLimit);
 
 // Landing page
 app.route('/', landing);
+
+// Well-known endpoints (for agent discoverability)
+app.route('/.well-known', wellKnown);
 
 // Health check
 app.get('/health', (c) => {
@@ -81,9 +85,11 @@ Server running at http://${info.address}:${info.port}
 
 Endpoints:
   GET  /               - Landing page
+  GET  /.well-known/skill.md - Agent instructions
   POST /v1/pages/{id}  - Create or replace a page
   GET  /p/{id}         - Render page in browser
   GET  /p/{id}/raw     - Fetch raw HTML
+  GET  /p/{id}/md      - Fetch markdown source
   GET  /api/agent      - Agent instructions (markdown)
   POST /api/proxy       - Proxy external requests (CORS bypass)
   GET  /health         - Health check
