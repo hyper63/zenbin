@@ -35,6 +35,15 @@ export const config = {
     failedAttemptWindowMs: parseInt(process.env.AUTH_FAILED_ATTEMPT_WINDOW_MS || '900000', 10), // 15 minutes
     lockoutDurationMs: parseInt(process.env.AUTH_LOCKOUT_DURATION_MS || '900000', 10), // 15 minutes
   },
+
+  // Subdomains
+  subdomains: {
+    enabled: process.env.SUBDOMAINS_ENABLED !== 'false', // default true
+    maxLength: parseInt(process.env.SUBDOMAIN_MAX_LENGTH || '63', 10),
+    maxPagesPerSubdomain: parseInt(process.env.SUBDOMAIN_MAX_PAGES || '100', 10),
+    reservedNames: (process.env.SUBDOMAIN_RESERVED_NAMES || 'www,api,mail,admin,blog,docs,help,support,status,billing,account,accounts,app,apps,dashboard,cdn,static,assets,img,images,image,forum,forums,wiki,news,m,dev,staging,test,testing,sandbox,beta,alpha,lab,labs,store,shop,pricing,legal,privacy,terms,security, careers,jobs,contact,about,home').split(',').filter(Boolean),
+    baseDomain: process.env.SUBDOMAIN_BASE_DOMAIN || 'zenbin.io',
+  },
 } as const;
 
 // Validation

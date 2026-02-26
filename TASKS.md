@@ -1,5 +1,7 @@
 # Feature: Custom Subdomains
 
+## Status: ✅ IMPLEMENTED (2026-02-26)
+
 ## Overview
 
 Allow users to publish pages under their own subdomain:
@@ -9,21 +11,21 @@ Allow users to publish pages under their own subdomain:
 ## User Experience
 
 ```
-# User creates/configures their subdomain
-POST /v1/domains/set
-{
-  "subdomain": "my-app"
-}
+# Claim a subdomain
+POST /v1/subdomains/my-app
 
-# Now they can publish to it
-POST /v1/pages/landing
-Host: my-app.zenbin.io
-{
-  "html": "<h1>Welcome</h1>"
-}
+# Publish to it (use X-Subdomain header)
+POST /v1/pages/index
+X-Subdomain: my-app
+{ "html": "<h1>Welcome</h1>" }
+
+# Add more pages
+POST /v1/pages/about
+X-Subdomain: my-app
+{ "html": "<h1>About</h1>" }
 
 # Result
-→ https://my-app.zenbin.io/         (their landing page)
+→ https://my-app.zenbin.io/         (index page)
 → https://my-app.zenbin.io/about    (nested page)
 ```
 
@@ -35,117 +37,49 @@ Host: my-app.zenbin.io
 4. **Branding** - Better for sharing and demos
 5. **Portfolio Apps** - Multiple pages = full app experience
 
-## Architecture
+## Implementation Details
 
-### DNS Configuration
-```
-*.zenbin.io    CNAME    zenbin.io
-```
-- Wildcard DNS routes all subdomains to main server
-- Server inspects `Host` header to determine subdomain
+### Endpoints Implemented
 
-### Routing Logic
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/v1/subdomains/{name}` | POST | Claim a subdomain |
+| `/v1/subdomains/{name}` | GET | Get subdomain info |
+| `/v1/subdomains/{name}` | DELETE | Delete subdomain and all pages |
+| `/v1/subdomains/{name}/pages` | GET | List pages in subdomain |
+| `/v1/pages/{id}` | POST | Publish page (use `X-Subdomain` header) |
 
-```typescript
-// Request comes in
-const host = request.headers.get('host')
-// host = "my-app.zenbin.io"
+### Subdomain Rules
 
-// Extract subdomain
-const subdomain = host.split('.')[0]
-// subdomain = "my-app"
+- 3-63 characters
+- Must start with a letter
+- Lowercase letters, numbers, and hyphens only
+- Must end with letter or number
+- Reserved names blocked (www, api, mail, etc.)
 
-// Route based on presence of subdomain
-if (subdomain && subdomain !== 'www' && subdomain !== 'zenbin') {
-  // Subdomain request → serve from subdomain's pages
-  return serveSubdomainPage(subdomain, path)
-} else {
-  // Main domain → landing page or /p/{id}
-  return serveMainDomain(path)
-}
-```
+### Storage
 
-### Storage Schema
+- Pages stored with composite key: `{subdomain}:{id}`
+- Subdomains stored in separate LMDB database
+- Page count tracked per subdomain
+- Max 100 pages per subdomain
 
-```typescript
-interface Subdomain {
-  name: string;           // "my-app"
-  owner_id?: string;     // Future: user accounts
-  created_at: string;
-  pages: {
-    '/': Page;           // Root page
-    '/about'?: Page;    // Optional nested pages
-    '/docs'?: Page;
-    // etc.
-  }
-}
-```
+### Backwards Compatibility
 
-### New Endpoints
+- `/p/{id}` paths still work for standalone pages
+- Subdomain routes use Host header detection
+- No auth required (anonymous claiming)
 
-| Endpoint | Description |
-|----------|-------------|
-| `POST /v1/subdomains/{name}` | Claim a subdomain |
-| `GET /v1/subdomains` | List available subdomains |
-| `POST /v1/pages/{path}?subdomain={name}` | Publish to subdomain |
-| `GET /v1/subdomains/{name}/pages` | List pages in subdomain |
+## Future Enhancements
 
-### Considerations
+1. **User accounts** - Optional auth for claiming/ownership
+2. **Custom domains** - `my-app.com` → zenbin
+3. **Analytics** - Per-subdomain stats
+4. **Sitemap generation** - Auto-generate sitemaps
+5. **Custom 404 pages** - Per-subdomain 404 customization
 
-1. **Subdomain Collision** - First-come-first-served? Or require auth?
-2. **Reserved Names** - `www`, `api`, `mail`, `admin`, etc.
-3. **Rate Limiting** - Prevent subdomain squatting
-4. **Cleanup** - TTL for unused subdomains?
-5. **SSL Certs** - Wildcard cert covers `*.zenbin.io`
+## Testing
 
-## Implementation Phases
-
-### Phase 1: Basic Subdomain Routing
-- [ ] Wildcard DNS configuration (if not already)
-- [ ] Middleware to extract subdomain from Host header
-- [ ] Route subdomain requests to dedicated page storage
-- [ ] Subdomain landing page (root `/`)
-- [ ] Fallback for non-existent subdomains
-
-### Phase 2: Subdomain Claiming
-- [ ] `POST /v1/subdomains/{name}` - Claim subdomain
-- [ ] Reserved subdomain list
-- [ ] Subdomain validation (alphanumeric, length limits)
-- [ ] Storage for subdomain-to-pages mapping
-
-### Phase 3: Multi-page Support
-- [ ] Nested paths under subdomain: `/about`, `/docs`
-- [ ] Page listing endpoint
-- [ ] Default routing (path `"/"` → root page)
-
-### Phase 4: Advanced Features (Future)
-- [ ] User accounts (optional auth)
-- [ ] Custom domains (`my-app.com` → zenbin)
-- [ ] Analytics per subdomain
-- [ ] Sitemap generation
-
-## Questions to Resolve
-
-1. **Auth Requirement?** 
-   - Option A: Anonymous claiming (first-come-first-served)
-   - Option B: Require API key or simple token
-   - Recommendation: Start with Option A, add auth later if abuse
-
-2. **Expiration?**
-   - Option A: Never expire (permanent)
-   - Option B: TTL cleanup (e.g., 30 days unused)
-   - Recommendation: Permanent for MVP, TTL for abuse prevention
-
-3. **Path-based vs Subdomain-only?**
-   - Keep `/p/{id}` for backwards compatibility
-   - Subdomains are opt-in for users who want it
-
-## Related
-
-- OnHyper already supports custom subdomains
-- Could leverage OnHyper infrastructure for this
-- May need coordination with OnHyper for cert management
-
-## Priority
-
-**Medium** - Nice-to-have feature that significantly improves UX for professional use cases. Should implement after core stability is proven.
+- 18 subdomain-specific tests passing
+- All 112 tests passing (including core API tests)
+- Test coverage: claim, publish, list, delete, stats
