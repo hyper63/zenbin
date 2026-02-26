@@ -4,6 +4,7 @@ import { savePage, getPage } from '../storage/db.js';
 import { generateEtag } from '../utils/etag.js';
 import { validateId, validatePageBody, decodeHtml, decodeMarkdown, validateAuthInput } from '../utils/validation.js';
 import { hashPassword, generateUrlToken } from '../utils/auth.js';
+import { trackApiCall, trackPageCreated } from '../analytics/posthog.js';
 
 const pages = new Hono();
 
@@ -123,6 +124,24 @@ pages.post('/:id', async (c) => {
       response.secret_markdown_url = `${baseUrl}/p/${page.id}/md?token=${urlToken}`;
     }
   }
+
+  // Track page creation
+  if (created) {
+    trackPageCreated({
+      pageId: page.id,
+      hasAuth: !!authData,
+      contentType: page.content_type || 'text/html',
+      hasMarkdown: !!page.markdown,
+    });
+  }
+
+  // Track API call
+  trackApiCall({
+    endpoint: '/v1/pages/:id',
+    method: 'POST',
+    pageId: page.id,
+    statusCode: 201,
+  });
 
   c.header('ETag', page.etag);
   return c.json(response, 201);

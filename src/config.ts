@@ -35,6 +35,9 @@ export const config = {
     failedAttemptWindowMs: parseInt(process.env.AUTH_FAILED_ATTEMPT_WINDOW_MS || '900000', 10), // 15 minutes
     lockoutDurationMs: parseInt(process.env.AUTH_LOCKOUT_DURATION_MS || '900000', 10), // 15 minutes
   },
+
+  // Analytics
+  posthogKey: process.env.POSTHOG_KEY || '',
 } as const;
 
 // Validation

@@ -12,6 +12,7 @@ import { rateLimit } from './middleware/rateLimit.js';
 import { proxyRateLimit } from './middleware/proxyRateLimit.js';
 import { proxy } from './routes/proxy.js';
 import { verifyApiKey } from './middleware/verifyApiKey.js';
+import { initAnalytics, closeAnalytics } from './analytics/posthog.js';
 
 const app = new Hono();
 
@@ -63,6 +64,9 @@ async function main() {
     initDatabase();
     console.log(`Database initialized at ${config.lmdbPath}`);
 
+    console.log('Initializing analytics...');
+    initAnalytics();
+
     const server = serve({
       fetch: app.fetch,
       port: config.port,
@@ -107,6 +111,7 @@ API Key Configuration:
     // Graceful shutdown
     const shutdown = async (signal: string) => {
       console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+      await closeAnalytics();
       await closeDatabase();
       process.exit(0);
     };

@@ -10,7 +10,12 @@
     "start": "node dist/index.js",
     "test": "vitest"
   },
-  "keywords": ["html", "sandbox", "api", "hosting"],
+  "keywords": [
+    "html",
+    "sandbox",
+    "api",
+    "hosting"
+  ],
   "license": "MIT",
   "dependencies": {
     "@hono/node-server": "^1.13.7",
@@ -21,6 +26,7 @@
     "hono": "^4.6.12",
     "jsonwebtoken": "^9.0.2",
     "lmdb": "^3.1.5",
+    "posthog-node": "^5.26.0",
     "typescript": "^5.7.2"
   },
   "devDependencies": {

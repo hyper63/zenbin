@@ -4,6 +4,7 @@ import { validateId } from '../utils/validation.js';
 import { generateEtag, etagMatches } from '../utils/etag.js';
 import { verifyPassword, verifyUrlToken, parseBasicAuth } from '../utils/auth.js';
 import { checkAuthRateLimit, recordFailedAttempt, resetAuthAttempts } from '../middleware/authRateLimit.js';
+import { trackPageView } from '../analytics/posthog.js';
 import type { Page } from '../storage/db.js';
 
 const render = new Hono();
@@ -155,6 +156,14 @@ render.get('/:id', async (c) => {
   c.header('Cache-Control', 'public, max-age=0, must-revalidate');
   c.header('Content-Type', page.content_type || 'text/html; charset=utf-8');
 
+  // Track page view
+  trackPageView({
+    pageId: id,
+    referrer: c.req.header('Referer'),
+    userAgent: c.req.header('User-Agent'),
+    ip: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
+  });
+
   return c.body(page.html);
 });
 
@@ -192,6 +201,14 @@ render.get('/:id/md', async (c) => {
   c.header('ETag', mdEtag);
   c.header('Cache-Control', 'public, max-age=0, must-revalidate');
 
+  // Track page view (markdown)
+  trackPageView({
+    pageId: id,
+    referrer: c.req.header('Referer'),
+    userAgent: c.req.header('User-Agent'),
+    ip: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
+  });
+
   return c.body(page.markdown);
 });
 
@@ -228,6 +245,14 @@ render.get('/:id/raw', async (c) => {
   c.header('Content-Disposition', `inline; filename="${id}.html"`);
   c.header('ETag', page.etag);
   c.header('Cache-Control', 'public, max-age=0, must-revalidate');
+
+  // Track page view (raw)
+  trackPageView({
+    pageId: id,
+    referrer: c.req.header('Referer'),
+    userAgent: c.req.header('User-Agent'),
+    ip: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
+  });
 
   return c.body(page.html);
 });
