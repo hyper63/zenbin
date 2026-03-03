@@ -82,15 +82,8 @@ app.route('/', landing);
 // This allows proper control over when to handle subdomain vs pass through
 import { handleSubdomainRequest } from './routes/subdomainRender.js';
 
-// Wildcard route for subdomain requests - must come after landing
-app.get('/*', async (c) => {
-  const subdomain = c.get('subdomain');
-  if (subdomain) {
-    return handleSubdomainRequest(c);
-  }
-  // Not a subdomain - return 404
-  return c.json({ error: 'Not found' }, 404);
-});
+// DEBUG: Test if landing works without wildcard
+// app.get('/*', async (c) => {
 
 // 404 handler
 app.notFound((c) => {
