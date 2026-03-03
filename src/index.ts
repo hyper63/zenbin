@@ -75,7 +75,20 @@ app.route('/api/proxy', proxy);
 // Render routes (for /p/{id} paths - backwards compatibility)
 app.route('/p', render);
 
-// Catch-all route that handles both main domain and subdomains
+// Root path handler - landing page for main domain, subdomain page for subdomains
+app.get('/', async (c) => {
+  const subdomain = c.get('subdomain');
+  
+  if (subdomain) {
+    // Subdomain request - render subdomain index page
+    return serveSubdomainPage(c, subdomain, '/');
+  }
+  
+  // Main domain request - render landing page
+  return serveLandingPage(c);
+});
+
+// Catch-all route for other paths (subdomain pages or 404)
 app.get('/*', async (c) => {
   const subdomain = c.get('subdomain');
   const path = c.req.path;
@@ -85,12 +98,7 @@ app.get('/*', async (c) => {
     return serveSubdomainPage(c, subdomain, path);
   }
   
-  // Main domain request - render landing page only for root path
-  if (path === '/') {
-    return serveLandingPage(c);
-  }
-  
-  // Not found for other paths on main domain
+  // Main domain request - not found for other paths
   return c.json({ error: 'Not found' }, 404);
 });
 
