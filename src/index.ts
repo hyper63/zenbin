@@ -7,16 +7,16 @@ import { initDatabase, closeDatabase } from './storage/db.js';
 import { pages } from './routes/pages.js';
 import { render } from './routes/render.js';
 import { agent } from './routes/agent.js';
-import { landing } from './routes/landing.js';
 import { stats } from './routes/stats.js';
 import { wellKnown } from './routes/wellKnown.js';
 import { subdomains } from './routes/subdomains.js';
-import { subdomainRender } from './routes/subdomainRender.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { proxyRateLimit } from './middleware/proxyRateLimit.js';
 import { proxy } from './routes/proxy.js';
 import { verifyApiKey } from './middleware/verifyApiKey.js';
 import { initAnalytics, closeAnalytics } from './analytics/posthog.js';
+import { serveLandingPage } from './routes/landing.js';
+import { serveSubdomainPage } from './routes/subdomainRender.js';
 
 // Type for context variables
 type Variables = {
@@ -72,14 +72,27 @@ app.route('/api/agent', agent);
 app.use('/api/proxy/*', proxyRateLimit);
 app.route('/api/proxy', proxy);
 
-// Subdomain render routes (catches subdomain requests - must come first)
-app.route('/', subdomainRender);
-
-// Landing page (main domain only - handles non-subdomain requests)
-app.route('/', landing);
-
 // Render routes (for /p/{id} paths - backwards compatibility)
 app.route('/p', render);
+
+// Catch-all route that handles both main domain and subdomains
+app.get('/*', async (c) => {
+  const subdomain = c.get('subdomain');
+  const path = c.req.path;
+  
+  if (subdomain) {
+    // Subdomain request - render subdomain page
+    return serveSubdomainPage(c, subdomain, path);
+  }
+  
+  // Main domain request - render landing page only for root path
+  if (path === '/') {
+    return serveLandingPage(c);
+  }
+  
+  // Not found for other paths on main domain
+  return c.json({ error: 'Not found' }, 404);
+});
 
 // 404 handler
 app.notFound((c) => {

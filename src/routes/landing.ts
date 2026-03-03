@@ -1128,3 +1128,9 @@ landing.get('/', (c) => {
 });
 
 export { landing };
+
+// Export a function to serve the landing page directly
+export function serveLandingPage(c: any) {
+  c.header('Content-Type', 'text/html; charset=utf-8');
+  return c.body(getHtml());
+}

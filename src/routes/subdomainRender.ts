@@ -495,3 +495,67 @@ subdomainRender.get('/*/md', extractSubdomain, async (c) => {
 });
 
 export { subdomainRender };
+
+// Export a function to serve subdomain pages directly (for use in unified handler)
+export async function serveSubdomainPage(c: any, subdomain: string, path: string) {
+  // Check if subdomain exists
+  const subdomainObj = getSubdomain(subdomain);
+  if (!subdomainObj) {
+    c.header('Content-Type', 'text/html; charset=utf-8');
+    return c.body(getNonExistentSubdomainPage(subdomain), 404);
+  }
+  
+  // Get the path (normalize to page ID)
+  const pageId = path === '/' ? 'index' : path.slice(1); // Remove leading slash
+  
+  // Validate page ID
+  const idError = validateId(pageId);
+  if (idError) {
+    c.header('Content-Type', 'text/html; charset=utf-8');
+    return c.body(getNotFoundPage(subdomain, path), 404);
+  }
+  
+  // Get the page
+  const page = getPage(pageId, subdomain);
+  
+  // If no page found
+  if (!page) {
+    // Special case: if requesting root and no index page, show placeholder
+    if (pageId === 'index') {
+      c.header('Content-Type', 'text/html; charset=utf-8');
+      return c.body(getPlaceholderPage(subdomain));
+    }
+    
+    // Otherwise, show 404
+    c.header('Content-Type', 'text/html; charset=utf-8');
+    return c.body(getNotFoundPage(subdomain, path), 404);
+  }
+  
+  // Check authentication
+  const authResponse = await verifyPageAuth(c, page);
+  if (authResponse) {
+    return authResponse;
+  }
+  
+  // Return the rendered HTML
+  const html = renderPage(page, subdomain);
+  
+  const etag = generateEtag(html);
+  const ifNoneMatch = c.req.header('If-None-Match');
+  if (etagMatches(ifNoneMatch, etag)) {
+    return c.body(null, 304);
+  }
+  
+  // Set security headers
+  SECURITY_HEADERS['Content-Security-Policy'] += `; style-src 'self' 'unsafe-inline' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:`;
+  
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    c.header(key, value);
+  }
+  
+  c.header('Content-Type', 'text/html; charset=utf-8');
+  c.header('ETag', etag);
+  c.header('Cache-Control', 'public, max-age=0, must-revalidate');
+  
+  return c.body(html);
+}
