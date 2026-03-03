@@ -11,6 +11,7 @@ import { landing } from './routes/landing.js';
 import { stats } from './routes/stats.js';
 import { wellKnown } from './routes/wellKnown.js';
 import { subdomains } from './routes/subdomains.js';
+import { subdomainRender } from './routes/subdomainRender.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { proxyRateLimit } from './middleware/proxyRateLimit.js';
 import { proxy } from './routes/proxy.js';
@@ -29,7 +30,7 @@ app.use('*', logger());
 app.use('*', cors());
 app.use('*', rateLimit);
 
-// Subdomain detection middleware - must run before any routes
+// Subdomain detection middleware
 app.use('*', async (c, next) => {
   const host = c.req.header('host') || '';
   const baseDomain = config.subdomains.baseDomain;
@@ -71,18 +72,15 @@ app.route('/api/agent', agent);
 app.use('/api/proxy/*', proxyRateLimit);
 app.route('/api/proxy', proxy);
 
-// Render routes (for /p/{id} paths - backwards compatibility)
-app.route('/p', render);
-
-// Landing page - handles main domain root path
+// Landing page (main domain only - must come before subdomain routes)
 app.route('/', landing);
 
-// Subdomain handler - import and use directly instead of mounting sub-app
-// This allows proper control over when to handle subdomain vs pass through
-import { handleSubdomainRequest } from './routes/subdomainRender.js';
+// Render routes (for /p/{id} paths - backwards compatibility)
+// Must come before subdomain routes so /p/* doesn't get caught by subdomain handler
+app.route('/p', render);
 
-// DEBUG: Test if landing works without wildcard
-// app.get('/*', async (c) => {
+// Subdomain render routes (catches all other paths for subdomain requests)
+app.route('/', subdomainRender);
 
 // 404 handler
 app.notFound((c) => {
