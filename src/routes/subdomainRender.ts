@@ -311,12 +311,9 @@ subdomainRender.use('*', extractSubdomain, requireSubdomain);
 subdomainRender.get('/*', async (c) => {
   const subdomain = c.get('subdomain');
   
-  // Double-check we have a subdomain (should be guaranteed by requireSubdomain middleware)
+  // If no subdomain, let Hono try the next mounted route
   if (!subdomain) {
-    // This should not happen, but return empty to let Hono continue to next route
-    // The requireSubdomain middleware should have already filtered non-subdomain requests
-    c.header('Content-Type', 'text/html; charset=utf-8');
-    return c.body(getPlaceholderPage('unknown'));
+    return c.notFound();
   }
   
   // Check if subdomain exists
