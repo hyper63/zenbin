@@ -8,29 +8,52 @@ import { pages } from './routes/pages.js';
 import { render } from './routes/render.js';
 import { agent } from './routes/agent.js';
 import { landing } from './routes/landing.js';
-import { wellknown } from './routes/wellknown.js';
+import { stats } from './routes/stats.js';
+import { wellKnown } from './routes/wellKnown.js';
+import { subdomains } from './routes/subdomains.js';
+import { subdomainRender } from './routes/subdomainRender.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { proxyRateLimit } from './middleware/proxyRateLimit.js';
 import { proxy } from './routes/proxy.js';
 import { verifyApiKey } from './middleware/verifyApiKey.js';
 import { initAnalytics, closeAnalytics } from './analytics/posthog.js';
 
-const app = new Hono();
+// Type for context variables
+type Variables = {
+  subdomain: string;
+};
+
+const app = new Hono<{ Variables: Variables }>();
 
 // Middleware
 app.use('*', logger());
 app.use('*', cors());
 app.use('*', rateLimit);
 
+// Subdomain detection middleware
+app.use('*', async (c, next) => {
+  const host = c.req.header('host') || '';
+  const baseDomain = config.subdomains.baseDomain;
+  
+  // Check if this is a subdomain request
+  const parts = host.split('.');
+  if (parts.length >= 3) {
+    const potentialSubdomain = parts[0].toLowerCase();
+    const reserved = new Set(config.subdomains.reservedNames);
+    if (!reserved.has(potentialSubdomain) && potentialSubdomain !== 'www') {
+      c.set('subdomain', potentialSubdomain);
+    }
+  }
+  
+  await next();
+});
+
 // API Key verification (must be after rateLimit to avoid abuse)
 app.use('/v1/*', verifyApiKey);
 app.use('/api/proxy/*', verifyApiKey);
 
-// Landing page
-app.route('/', landing);
-
-// Well-known endpoints (agent discovery)
-app.route('/.well-known', wellknown);
+// Well-known endpoints (for agent discoverability)
+app.route('/.well-known', wellKnown);
 
 // Health check
 app.get('/health', (c) => {
@@ -39,6 +62,8 @@ app.get('/health', (c) => {
 
 // API routes
 app.route('/v1/pages', pages);
+app.route('/v1/subdomains', subdomains);
+app.route('/v1/stats', stats);
 
 // Agent instructions
 app.route('/api/agent', agent);
@@ -47,8 +72,15 @@ app.route('/api/agent', agent);
 app.use('/api/proxy/*', proxyRateLimit);
 app.route('/api/proxy', proxy);
 
-// Render routes
+// Landing page (main domain only - must come before subdomain routes)
+app.route('/', landing);
+
+// Render routes (for /p/{id} paths - backwards compatibility)
+// Must come before subdomain routes so /p/* doesn't get caught by subdomain handler
 app.route('/p', render);
+
+// Subdomain render routes (catches all other paths for subdomain requests)
+app.route('/', subdomainRender);
 
 // 404 handler
 app.notFound((c) => {
@@ -93,13 +125,25 @@ async function main() {
 Server running at http://${info.address}:${info.port}
 
 Endpoints:
-  GET  /               - Landing page
-  POST /v1/pages/{id}  - Create or replace a page
-  GET  /p/{id}         - Render page in browser
-  GET  /p/{id}/raw     - Fetch raw HTML
-  GET  /api/agent      - Agent instructions (markdown)
-  POST /api/proxy       - Proxy external requests (CORS bypass)
-  GET  /health         - Health check
+  GET  /                        - Landing page
+  GET  /.well-known/skill.md    - Agent instructions
+  GET  /v1/stats                - Site statistics
+  POST /v1/subdomains/{name}    - Claim a subdomain
+  GET  /v1/subdomains/{name}    - Get subdomain info
+  GET  /v1/subdomains/{name}/pages - List subdomain pages
+  DELETE /v1/subdomains/{name}  - Delete subdomain
+  POST /v1/pages/{id}           - Create or replace a page (use X-Subdomain header for subdomains)
+  GET  /p/{id}                  - Render page in browser
+  GET  /p/{id}/raw              - Fetch raw HTML
+  GET  /p/{id}/md               - Fetch markdown source
+  GET  /{path} (subdomain)      - Render subdomain page
+  GET  /api/agent               - Agent instructions (markdown)
+  POST /api/proxy               - Proxy external requests (CORS bypass)
+  GET  /health                  - Health check
+
+Subdomain routing:
+  {name}.${config.subdomains.baseDomain}/  - Subdomain root page
+  {name}.${config.subdomains.baseDomain}/{path} - Subdomain nested pages
 
 Configuration:
   Max payload size: ${config.maxPayloadSize} bytes

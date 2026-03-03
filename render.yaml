@@ -26,6 +26,8 @@ services:
         value: 100
       - key: ZENBIN_JWT_SECRET
         value: change-me-in-production
+      - key: SUBDOMAIN_BASE_DOMAIN
+        value: zenbin.org
     disk:
       name: zenbin-data
       mountPath: /var/data

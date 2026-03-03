@@ -10,6 +10,7 @@ export interface PageAuth {
 // Page data model
 export interface Page {
   id: string;
+  subdomain?: string;      // NEW: which subdomain owns this page
   html: string;
   markdown?: string;
   encoding: 'utf-8' | 'base64';
@@ -21,22 +22,43 @@ export interface Page {
   auth?: PageAuth;  // Optional - undefined means public page
 }
 
+// Subdomain data model
+export interface Subdomain {
+  name: string;
+  created_at: string;
+  updated_at: string;
+  page_count: number;
+}
+
 // Result type for save operations
 export interface SaveResult {
   page: Page;
   created: boolean;
 }
 
-let db: Database<Page, string>;
+// Result type for subdomain operations
+export interface SubdomainResult {
+  subdomain: Subdomain;
+  created: boolean;
+}
 
-export function initDatabase(): Database<Page, string> {
+let db: Database<Page, string>;
+let subdomainDb: Database<Subdomain, string>;
+
+export function initDatabase(): { pages: Database<Page, string>; subdomains: Database<Subdomain, string> } {
   if (!db) {
     db = open<Page, string>({
       path: config.lmdbPath,
       compression: true,
     });
   }
-  return db;
+  if (!subdomainDb) {
+    subdomainDb = open<Subdomain, string>({
+      path: `${config.lmdbPath}-subdomains`,
+      compression: true,
+    });
+  }
+  return { pages: db, subdomains: subdomainDb };
 }
 
 export function getDatabase(): Database<Page, string> {
@@ -46,6 +68,17 @@ export function getDatabase(): Database<Page, string> {
   return db;
 }
 
+export function getSubdomainDatabase(): Database<Subdomain, string> {
+  if (!subdomainDb) {
+    throw new Error('Database not initialized. Call initDatabase() first.');
+  }
+  return subdomainDb;
+}
+
+// =====================
+// Page Operations
+// =====================
+
 export async function savePage(
   id: string,
   data: {
@@ -54,16 +87,21 @@ export async function savePage(
     encoding?: 'utf-8' | 'base64';
     content_type?: string;
     title?: string;
+    subdomain?: string;
     auth?: { passwordHash?: string; urlTokenHash?: string };
   },
   etag: string
 ): Promise<SaveResult> {
   const db = getDatabase();
-  const existing = db.get(id);
+  
+  // For subdomain pages, use composite key; for regular pages, use id directly
+  const key = data.subdomain ? `${data.subdomain}:${id}` : id;
+  const existing = db.get(key);
   const now = new Date().toISOString();
 
   const page: Page = {
     id,
+    subdomain: data.subdomain,
     html: data.html || '',
     markdown: data.markdown,
     encoding: data.encoding || 'utf-8',
@@ -75,7 +113,7 @@ export async function savePage(
     auth: data.auth,
   };
 
-  await db.put(id, page);
+  await db.put(key, page);
 
   return {
     page,
@@ -83,23 +121,126 @@ export async function savePage(
   };
 }
 
-export function getPage(id: string): Page | undefined {
+export function getPage(id: string, subdomain?: string): Page | undefined {
   const db = getDatabase();
-  return db.get(id);
+  const key = subdomain ? `${subdomain}:${id}` : id;
+  return db.get(key);
 }
 
-export async function deletePage(id: string): Promise<boolean> {
+export async function deletePage(id: string, subdomain?: string): Promise<boolean> {
   const db = getDatabase();
-  const existing = db.get(id);
+  const key = subdomain ? `${subdomain}:${id}` : id;
+  const existing = db.get(key);
   if (!existing) {
     return false;
   }
-  await db.remove(id);
+  await db.remove(key);
   return true;
+}
+
+export function getPageCount(): number {
+  const db = getDatabase();
+  return db.getKeys().asArray.length;
+}
+
+export function listPagesBySubdomain(subdomain: string): Page[] {
+  const db = getDatabase();
+  const prefix = `${subdomain}:`;
+  const pages: Page[] = [];
+  
+  for (const key of db.getKeys({ start: prefix })) {
+    if (key.startsWith(prefix)) {
+      const page = db.get(key);
+      if (page) {
+        pages.push(page);
+      }
+    }
+  }
+  
+  return pages;
+}
+
+// =====================
+// Subdomain Operations
+// =====================
+
+export async function saveSubdomain(name: string): Promise<SubdomainResult> {
+  const subdomainDb = getSubdomainDatabase();
+  const existing = subdomainDb.get(name);
+  const now = new Date().toISOString();
+
+  const subdomain: Subdomain = {
+    name,
+    created_at: existing?.created_at || now,
+    updated_at: now,
+    page_count: existing?.page_count || 0,
+  };
+
+  await subdomainDb.put(name, subdomain);
+
+  return {
+    subdomain,
+    created: !existing,
+  };
+}
+
+export function getSubdomain(name: string): Subdomain | undefined {
+  const subdomainDb = getSubdomainDatabase();
+  return subdomainDb.get(name);
+}
+
+export async function deleteSubdomain(name: string): Promise<boolean> {
+  const subdomainDb = getSubdomainDatabase();
+  const db = getDatabase();
+  
+  const existing = subdomainDb.get(name);
+  if (!existing) {
+    return false;
+  }
+  
+  // Delete all pages in this subdomain
+  const prefix = `${name}:`;
+  for (const key of db.getKeys({ start: prefix })) {
+    if (key.startsWith(prefix)) {
+      await db.remove(key);
+    }
+  }
+  
+  // Delete the subdomain
+  await subdomainDb.remove(name);
+  return true;
+}
+
+export function getSubdomainCount(): number {
+  const subdomainDb = getSubdomainDatabase();
+  return subdomainDb.getKeys().asArray.length;
+}
+
+export function incrementSubdomainPageCount(name: string): void {
+  const subdomainDb = getSubdomainDatabase();
+  const subdomain = subdomainDb.get(name);
+  if (subdomain) {
+    subdomain.page_count += 1;
+    subdomain.updated_at = new Date().toISOString();
+    subdomainDb.putSync(name, subdomain);
+  }
+}
+
+export function decrementSubdomainPageCount(name: string): void {
+  const subdomainDb = getSubdomainDatabase();
+  const subdomain = subdomainDb.get(name);
+  if (subdomain && subdomain.page_count > 0) {
+    subdomain.page_count -= 1;
+    subdomain.updated_at = new Date().toISOString();
+    subdomainDb.putSync(name, subdomain);
+  }
 }
 
 export async function closeDatabase(): Promise<void> {
   if (db) {
     await db.close();
+  }
+  if (subdomainDb) {
+    await subdomainDb.close();
   }
 }
