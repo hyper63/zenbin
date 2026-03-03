@@ -75,12 +75,11 @@ app.route('/api/proxy', proxy);
 // Render routes (for /p/{id} paths - backwards compatibility)
 app.route('/p', render);
 
-// Subdomain render routes - MUST come before landing page
-// The requireSubdomain middleware passes through non-subdomain requests to the next route
-app.route('/', subdomainRender);
-
-// Landing page - only handles main domain requests (no subdomain set)
+// Landing page - handles main domain requests
 app.route('/', landing);
+
+// Subdomain render routes - handles subdomain requests
+app.route('/', subdomainRender);
 
 // 404 handler
 app.notFound((c) => {
