@@ -537,25 +537,20 @@ export async function serveSubdomainPage(c: any, subdomain: string, path: string
     return authResponse;
   }
   
-  // Return the rendered HTML
-  const html = renderPage(page, subdomain);
-  
-  const etag = generateEtag(html);
+  // Check If-None-Match for caching
   const ifNoneMatch = c.req.header('If-None-Match');
-  if (etagMatches(ifNoneMatch, etag)) {
+  if (etagMatches(ifNoneMatch, page.etag)) {
     return c.body(null, 304);
   }
   
   // Set security headers
-  SECURITY_HEADERS['Content-Security-Policy'] += `; style-src 'self' 'unsafe-inline' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:`;
-  
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     c.header(key, value);
   }
   
-  c.header('Content-Type', 'text/html; charset=utf-8');
-  c.header('ETag', etag);
+  c.header('Content-Type', page.content_type || 'text/html; charset=utf-8');
+  c.header('ETag', page.etag);
   c.header('Cache-Control', 'public, max-age=0, must-revalidate');
   
-  return c.body(html);
+  return c.body(page.html);
 }
