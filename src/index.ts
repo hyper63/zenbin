@@ -72,15 +72,14 @@ app.route('/api/agent', agent);
 app.use('/api/proxy/*', proxyRateLimit);
 app.route('/api/proxy', proxy);
 
-// Landing page (main domain only - must come before subdomain routes)
+// Subdomain render routes (catches subdomain requests - must come first)
+app.route('/', subdomainRender);
+
+// Landing page (main domain only - handles non-subdomain requests)
 app.route('/', landing);
 
 // Render routes (for /p/{id} paths - backwards compatibility)
-// Must come before subdomain routes so /p/* doesn't get caught by subdomain handler
 app.route('/p', render);
-
-// Subdomain render routes (catches all other paths for subdomain requests)
-app.route('/', subdomainRender);
 
 // 404 handler
 app.notFound((c) => {
