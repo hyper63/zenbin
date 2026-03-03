@@ -1,7 +1,23 @@
 import { Hono } from 'hono';
 import { config } from '../config.js';
 
-const landing = new Hono();
+type Variables = {
+  subdomain: string;
+};
+
+const landing = new Hono<{ Variables: Variables }>();
+
+// Middleware: Skip landing page for subdomain requests
+// If subdomain is set, don't handle this route - let subdomainRender take over
+landing.use('*', async (c, next) => {
+  const subdomain = c.get('subdomain');
+  if (subdomain) {
+    // Subdomain request - skip this landing handler
+    // By not calling next(), this route won't handle the request
+    return;
+  }
+  await next();
+});
 
 const getHtml = () => `<!DOCTYPE html>
 <html lang="en">

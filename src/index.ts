@@ -75,13 +75,13 @@ app.route('/api/proxy', proxy);
 // Render routes (for /p/{id} paths - backwards compatibility)
 app.route('/p', render);
 
-// Subdomain render routes - MUST come before landing
-// This handles all subdomain requests (snap-cal.zenbin.org/*)
-// The middleware checks for subdomain and passes through if not found
-app.route('/', subdomainRender);
-
-// Landing page - only reaches here if no subdomain matched
+// Landing page (main domain only)
+// Note: subdomainRender is mounted AFTER this, but handles subdomains via middleware check
 app.route('/', landing);
+
+// Subdomain render routes - catches all paths for subdomain requests
+// The requireSubdomain middleware ensures this only handles actual subdomains
+app.route('/', subdomainRender);
 
 // 404 handler
 app.notFound((c) => {
