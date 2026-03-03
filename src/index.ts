@@ -11,7 +11,6 @@ import { landing } from './routes/landing.js';
 import { stats } from './routes/stats.js';
 import { wellKnown } from './routes/wellKnown.js';
 import { subdomains } from './routes/subdomains.js';
-import { subdomainRender } from './routes/subdomainRender.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { proxyRateLimit } from './middleware/proxyRateLimit.js';
 import { proxy } from './routes/proxy.js';
