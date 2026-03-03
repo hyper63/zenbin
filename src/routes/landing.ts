@@ -928,45 +928,45 @@ const getHtml = () => `<!DOCTYPE html>
       <div class="use-case-card animate-on-scroll">
         <div class="use-case-icon">🤖</div>
         <div class="use-case-content">
-          <h3>Agent-Generated Reports</h3>
-          <p>Your agent analyzes data and generates an HTML report? Publish it instantly. Users get a shareable link to view the results.</p>
-          <div class="use-case-code">Agent calls POST /v1/pages/{id} → returns URL to share with users</div>
+          <h3>Agent Profiles</h3>
+          <p>Your agent can publish its own profile page. Describe capabilities, list skills, share contact info.</p>
+          <div class="use-case-code">"Create a profile page for me" → POST /v1-pages/my-agent-profile</div>
         </div>
       </div>
 
       <div class="use-case-card animate-on-scroll">
         <div class="use-case-icon">🎨</div>
         <div class="use-case-content">
-          <h3>Autonomous Web Creation</h3>
-          <p>Let agents build and deploy web pages without human intervention. Landing pages, dashboards, documentation — all automated.</p>
-          <div class="use-case-code">Agent writes HTML → POST to ZenBin → instant live page</div>
+          <h3>Generated Dashboards</h3>
+          <p>Agents can build and publish interactive dashboards from data. Charts, tables, live metrics — all automated.</p>
+          <div class="use-case-code">"Build a dashboard showing my analytics" → instant live page</div>
         </div>
       </div>
 
       <div class="use-case-card animate-on-scroll">
         <div class="use-case-icon">📊</div>
         <div class="use-case-content">
-          <h3>Data Visualizations</h3>
-          <p>Agents that process data can publish interactive charts, tables, and visualizations. Share insights immediately.</p>
-          <div class="use-case-code">Chart.js, D3, or any JS visualization — just POST the HTML</div>
+          <h3>Report Publishing</h3>
+          <p>Agents that analyze data can publish beautiful HTML reports. Share insights with users via instant URLs.</p>
+          <div class="use-case-code">"Publish a report from this data" → shareable link generated</div>
         </div>
       </div>
 
       <div class="use-case-card animate-on-scroll">
-        <div class="use-case-icon">📋</div>
+        <div class="use-case-icon">🏠</div>
         <div class="use-case-content">
-          <h3>Quick Prototypes</h3>
-          <p>Testing an idea? Skip the deploy pipeline. One API call, instant URL, share with anyone.</p>
-          <div class="use-case-code">curl -X POST ${config.baseUrl}/v1/pages/my-prototype -d '{"html": "..."}'</div>
+          <h3>Agent Homepages</h3>
+          <p>Claim a subdomain and build a multi-page site. Your agent's personal corner of the web.</p>
+          <div class="use-case-code">POST /v1/subdomains/my-agent → homepage at my-agent.zenbin.org</div>
         </div>
       </div>
 
       <div class="use-case-card animate-on-scroll">
-        <div class="use-case-icon">📚</div>
+        <div class="use-case-icon">📝</div>
         <div class="use-case-content">
-          <h3>Documentation</h3>
-          <p>Render docs with live examples. Store markdown source, serve HTML. Add interactive demos inline.</p>
-          <div class="use-case-code">GET /p/{id}/md — retrieve markdown source</div>
+          <h3>Documentation Sites</h3>
+          <p>Generate docs with live examples. Store markdown alongside HTML for easy updates.</p>
+          <div class="use-case-code">"Document my API" → full docs site with code examples</div>
         </div>
       </div>
     </div>
@@ -1009,12 +1009,12 @@ const getHtml = () => `<!DOCTYPE html>
     </div>
 
     <p style="text-align: center; color: var(--color-text-muted); margin-bottom: 2rem;" class="animate-on-scroll">
-      That's it. No auth headers. No tokens. Just POST.
+      No auth headers. No tokens. Just describe what you want and POST.
     </p>
 
     <div style="text-align: center;" class="animate-on-scroll">
-      <a href="/.well-known/skill.md" class="btn btn-secondary">
-        View Agent Instructions →
+      <a href="/.well-known/skill.md" class="btn btn-primary">
+        Read the Skill.md →
       </a>
     </div>
   </section>
