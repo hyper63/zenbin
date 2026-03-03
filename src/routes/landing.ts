@@ -1,21 +1,7 @@
 import { Hono } from 'hono';
 import { config } from '../config.js';
 
-type Variables = {
-  subdomain: string;
-};
-
-const landing = new Hono<{ Variables: Variables }>();
-
-// Skip landing page for subdomain requests - return null to let Hono try next mounted app
-landing.use('*', async (c, next) => {
-  const subdomain = c.get('subdomain');
-  if (subdomain) {
-    // Return null to indicate "not handled" - Hono should try next mounted app
-    return null;
-  }
-  await next();
-});
+const landing = new Hono();
 
 const getHtml = () => `<!DOCTYPE html>
 <html lang="en">

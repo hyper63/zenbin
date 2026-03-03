@@ -311,10 +311,9 @@ subdomainRender.use('*', extractSubdomain, requireSubdomain);
 subdomainRender.get('/*', async (c) => {
   const subdomain = c.get('subdomain');
   
-  // If no subdomain, this should have been handled by landing page
-  // But if we get here, return a 404
+  // If no subdomain, don't return anything - let Hono try next mounted app (landing)
   if (!subdomain) {
-    return c.json({ error: 'Not found' }, 404);
+    return;
   }
   
   // Check if subdomain exists

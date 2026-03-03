@@ -75,11 +75,12 @@ app.route('/api/proxy', proxy);
 // Render routes (for /p/{id} paths - backwards compatibility)
 app.route('/p', render);
 
+// Subdomain render routes - MUST come before landing to handle subdomain requests
+// Handler returns nothing (undefined) for non-subdomain, letting Hono try next route
+app.route('/', subdomainRender);
+
 // Landing page - handles main domain requests
 app.route('/', landing);
-
-// Subdomain render routes - handles subdomain requests
-app.route('/', subdomainRender);
 
 // 404 handler
 app.notFound((c) => {
