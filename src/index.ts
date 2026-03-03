@@ -30,7 +30,7 @@ app.use('*', logger());
 app.use('*', cors());
 app.use('*', rateLimit);
 
-// Subdomain detection middleware
+// Subdomain detection middleware - must run before any routes
 app.use('*', async (c, next) => {
   const host = c.req.header('host') || '';
   const baseDomain = config.subdomains.baseDomain;
@@ -72,15 +72,16 @@ app.route('/api/agent', agent);
 app.use('/api/proxy/*', proxyRateLimit);
 app.route('/api/proxy', proxy);
 
-// Landing page (main domain only - must come before subdomain routes)
-app.route('/', landing);
-
 // Render routes (for /p/{id} paths - backwards compatibility)
-// Must come before subdomain routes so /p/* doesn't get caught by subdomain handler
 app.route('/p', render);
 
-// Subdomain render routes (catches all other paths for subdomain requests)
+// Subdomain render routes - MUST come before landing
+// This handles all subdomain requests (snap-cal.zenbin.org/*)
+// The middleware checks for subdomain and passes through if not found
 app.route('/', subdomainRender);
+
+// Landing page - only reaches here if no subdomain matched
+app.route('/', landing);
 
 // 404 handler
 app.notFound((c) => {
