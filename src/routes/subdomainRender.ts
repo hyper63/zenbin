@@ -311,9 +311,9 @@ subdomainRender.use('*', extractSubdomain, requireSubdomain);
 subdomainRender.get('/*', async (c) => {
   const subdomain = c.get('subdomain');
   
-  // If no subdomain, don't return anything - let Hono try next mounted app (landing)
+  // If no subdomain, this shouldn't happen - return 404
   if (!subdomain) {
-    return;
+    return c.json({ error: 'Not found' }, 404);
   }
   
   // Check if subdomain exists
@@ -495,3 +495,66 @@ subdomainRender.get('/*/md', extractSubdomain, async (c) => {
 });
 
 export { subdomainRender };
+
+// Export a handler function for use in index.ts
+export async function handleSubdomainRequest(c: any) {
+  const subdomain = c.get('subdomain');
+  const path = c.req.path;
+  
+  // Get the subdomain object
+  const subdomainObj = getSubdomain(subdomain);
+  if (!subdomainObj) {
+    c.header('Content-Type', 'text/html; charset=utf-8');
+    return c.body(getNonExistentSubdomainPage(subdomain), 404);
+  }
+  
+  // Get the path (normalize to page ID)
+  const pageId = path === '/' ? 'index' : path.slice(1);
+  
+  // Validate page ID
+  const idError = validateId(pageId);
+  if (idError) {
+    c.header('Content-Type', 'text/html; charset=utf-8');
+    return c.body(getNotFoundPage(subdomain, path), 404);
+  }
+  
+  // Get the page
+  const page = getPage(pageId, subdomain);
+  
+  if (!page) {
+    if (pageId === 'index') {
+      c.header('Content-Type', 'text/html; charset=utf-8');
+      return c.body(getPlaceholderPage(subdomain));
+    }
+    c.header('Content-Type', 'text/html; charset=utf-8');
+    return c.body(getNotFoundPage(subdomain, path), 404);
+  }
+  
+  // Check authentication
+  const authResponse = await verifyPageAuth(c, page);
+  if (authResponse) {
+    return authResponse;
+  }
+  
+  // Return the rendered HTML
+  const html = renderPage(page, subdomain);
+  
+  const etag = generateEtag(html);
+  const ifNoneMatch = c.req.header('If-None-Match');
+  if (etagMatches(ifNoneMatch, etag)) {
+    return c.body(null, 304);
+  }
+  
+  // Set security headers
+  SECURITY_HEADERS['Content-Security-Policy'] += `; style-src 'self' 'unsafe-inline' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:`;
+  
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    c.header(key, value);
+  }
+  
+  c.header('Content-Type', 'text/html; charset=utf-8');
+  c.header('ETag', etag);
+  c.header('Cache-Control', 'public, max-age=0, must-revalidate');
+  
+  return c.body(html);
+}

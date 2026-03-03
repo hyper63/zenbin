@@ -75,12 +75,22 @@ app.route('/api/proxy', proxy);
 // Render routes (for /p/{id} paths - backwards compatibility)
 app.route('/p', render);
 
-// Subdomain render routes - MUST come before landing to handle subdomain requests
-// Handler returns nothing (undefined) for non-subdomain, letting Hono try next route
-app.route('/', subdomainRender);
-
-// Landing page - handles main domain requests
+// Landing page - handles main domain root path
 app.route('/', landing);
+
+// Subdomain handler - import and use directly instead of mounting sub-app
+// This allows proper control over when to handle subdomain vs pass through
+import { handleSubdomainRequest } from './routes/subdomainRender.js';
+
+// Wildcard route for subdomain requests - must come after landing
+app.get('/*', async (c) => {
+  const subdomain = c.get('subdomain');
+  if (subdomain) {
+    return handleSubdomainRequest(c);
+  }
+  // Not a subdomain - return 404
+  return c.json({ error: 'Not found' }, 404);
+});
 
 // 404 handler
 app.notFound((c) => {
