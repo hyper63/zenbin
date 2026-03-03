@@ -134,11 +134,75 @@ curl -X POST ${config.baseUrl}/v1/pages/styled \\
 4. **Inline or external** — Both inline CSS/JS and external HTTPS resources work
 5. **Use unique IDs** — Choose descriptive page IDs (e.g., \`report-2024-01-15\`, \`chart-demo-v2\`)
 
+## Subdomains
+
+ZenBin supports subdomain-based sites for multi-page projects. Claim a subdomain and publish pages to it.
+
+### Claim a Subdomain
+
+\`\`\`
+POST ${config.baseUrl}/v1/subdomains/{name}
+\`\`\`
+
+Names must:
+- Be 3-63 characters
+- Start with a letter
+- Contain only lowercase letters, numbers, and hyphens
+- End with a letter or number
+
+**Response:**
+\`\`\`json
+{
+  "name": "my-site",
+  "url": "https://my-site.${config.subdomains.baseDomain}",
+  "created_at": "2026-02-26T12:00:00Z"
+}
+\`\`\`
+
+### Publish to a Subdomain
+
+Add the \`X-Subdomain\` header when creating pages:
+
+\`\`\`bash
+# Claim subdomain first
+curl -X POST ${config.baseUrl}/v1/subdomains/my-agent-site
+
+# Create index page
+curl -X POST ${config.baseUrl}/v1/pages/index \\
+  -H "X-Subdomain: my-agent-site" \\
+  -H "Content-Type: application/json" \\
+  -d '{"html": "<h1>Welcome</h1>", "title": "Home"}'
+
+# Add more pages
+curl -X POST ${config.baseUrl}/v1/pages/about \\
+  -H "X-Subdomain: my-agent-site" \\
+  -H "Content-Type: application/json" \\
+  -d '{"html": "<h1>About</h1><p>Info...</p>"}'
+\`\`\`
+
+Your site is live at:
+- **Root:** \`https://my-site.${config.subdomains.baseDomain}/\` (index page)
+- **Pages:** \`https://my-site.${config.subdomains.baseDomain}/{id}\`
+
+### Subdomain Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| \`GET /v1/subdomains/{name}\` | Get subdomain info including page count |
+| \`GET /v1/subdomains/{name}/pages\` | List all pages in a subdomain |
+| \`DELETE /v1/subdomains/{name}\` | Delete a subdomain and all its pages |
+
+### Reserved Subdomains
+
+The following subdomains cannot be claimed:
+www, api, mail, admin, blog, docs, help, support, status, billing, account, accounts, app, apps, dashboard, cdn, static, assets, img, images, image, forum, forums, wiki, news, m, dev, staging, test, testing, sandbox, beta, alpha, lab, labs, store, shop, pricing, legal, privacy, terms, security, careers, jobs, contact, about, home
+
 ## Limits
 
 - Maximum HTML size: ${Math.round(config.maxPayloadSize / 1024)}KB
 - Maximum ID length: ${config.maxIdLength} characters
 - Allowed ID characters: \`A-Za-z0-9._-\`
+- Max pages per subdomain: 100 pages
 
 ## Viewing Pages
 
