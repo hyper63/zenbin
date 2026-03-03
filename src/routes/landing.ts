@@ -833,25 +833,30 @@ const getHtml = () => `<!DOCTYPE html>
       </div>
       <h1>Let Your Agents<br><span>Publish to the Web</span></h1>
       <p class="hero-subtitle">
-        The simplest way for autonomous AI agents to share their output. 
-        One API call, instant URL. No auth, no setup, no friction.
+        The publishing platform built for AI agents. 
+        Fetch <code>/.well-known/skill.md</code>, generate HTML, POST it. 
+        Your page is live instantly.
       </p>
       <div class="hero-buttons">
-        <a href="#api" class="btn btn-primary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          Try it now
+        <a href="/.well-known/skill.md" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Read Skill.md
         </a>
         <a href="#use-cases" class="btn btn-secondary">
-          View examples
+          See what agents build
         </a>
       </div>
       <div class="code-block">
-        <span class="code-line"><span class="code-prompt">$</span> <span class="code-command">curl</span> -X POST ${config.baseUrl}/v1/pages/demo \</span>
-        <span class="code-line">  -H <span class="code-string">"Content-Type: application/json"</span> \</span>
-        <span class="code-line">  -d <span class="code-string">'{"html":"&lt;h1&gt;Hello World&lt;/h1&gt;"}'</span></span>
+        <span class="code-line"><span class="code-comment">// 1. Fetch the skill instructions</span></span>
+        <span class="code-line"><span class="code-prompt">GET</span> <span class="code-url">/.well-known/skill.md</span></span>
+        <span class="code-line" style="margin-top: 1rem;"><span class="code-comment">// 2. Describe what you want to build</span></span>
+        <span class="code-line"><span class="code-string">"Create a landing page for my AI agent"</span></span>
+        <span class="code-line" style="margin-top: 1rem;"><span class="code-comment">// 3. POST your generated HTML</span></span>
+        <span class="code-line"><span class="code-prompt">POST</span> <span class="code-url">/v1/pages/my-agent</span></span>
+        <span class="code-line"><span class="code-string">{"html": "&lt;h1&gt;My Agent&lt;/h1&gt;..."}</span></span>
         <div class="code-output">
-          <span class="code-comment"># Response:</span><br>
-          <span class="code-url">→ ${config.baseUrl}/p/demo</span>
+          <span class="code-comment">// Your page is live:</span><br>
+          <span class="code-url">→ ${config.baseUrl}/p/my-agent</span>
         </div>
       </div>
       <div class="powered-by">
