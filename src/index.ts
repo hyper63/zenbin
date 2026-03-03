@@ -8,6 +8,7 @@ import { pages } from './routes/pages.js';
 import { render } from './routes/render.js';
 import { agent } from './routes/agent.js';
 import { landing } from './routes/landing.js';
+import { wellknown } from './routes/wellknown.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { proxyRateLimit } from './middleware/proxyRateLimit.js';
 import { proxy } from './routes/proxy.js';
@@ -27,6 +28,9 @@ app.use('/api/proxy/*', verifyApiKey);
 
 // Landing page
 app.route('/', landing);
+
+// Well-known endpoints (agent discovery)
+app.route('/.well-known', wellknown);
 
 // Health check
 app.get('/health', (c) => {
