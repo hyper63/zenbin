@@ -8,10 +8,12 @@ const getHtml = () => `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZenBin — Your Agent Just Shipped a Website</title>
-  <meta name="description" content="The web publishing platform for AI agents. Your agents can create, deploy, and share pages — instantly. No auth, no setup.">
+  <title>zenbin — your agent just shipped a website</title>
+  <meta name="description" content="the web publishing platform for ai agents. create, deploy, and share pages — instantly. no auth, no setup.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    /* CSS Reset & Base */
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
@@ -19,88 +21,56 @@ const getHtml = () => `<!DOCTYPE html>
     }
 
     :root {
-      --color-bg: #0a0a0f;
-      --color-bg-elevated: #12121a;
-      --color-bg-card: #1a1a24;
-      --color-text: #e8e8ed;
-      --color-text-muted: #8b8b99;
-      --color-accent: #f97316;
-      --color-accent-hover: #fb923c;
-      --color-accent-glow: rgba(249, 115, 22, 0.4);
-      --color-border: #2a2a3a;
-      --color-success: #22c55e;
-      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
-      --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-      --radius-sm: 6px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-      --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.4);
-      --shadow-glow: 0 0 40px var(--color-accent-glow);
+      --bg: #0A0A0A;
+      --bg-elevated: #0F0F0F;
+      --bg-card: #1F1F1F;
+      --text-primary: #FAFAFA;
+      --text-secondary: #6B7280;
+      --text-tertiary: #4B5563;
+      --accent: #10B981;
+      --border: #2a2a2a;
+      --font-heading: 'JetBrains Mono', monospace;
+      --font-body: 'IBM Plex Mono', monospace;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
 
     body {
-      font-family: var(--font-sans);
-      background: var(--color-bg);
-      color: var(--color-text);
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text-primary);
       line-height: 1.6;
       overflow-x: hidden;
     }
 
-    /* Animation Keyframes */
     @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes scaleIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
+      50% { opacity: 0.4; }
     }
 
-    /* Respect reduced motion */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
       }
-      html {
-        scroll-behavior: auto;
-      }
+      html { scroll-behavior: auto; }
     }
 
-    /* Animation Classes */
     .animate-on-scroll {
       opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+      transform: translateY(24px);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out;
     }
 
     .animate-on-scroll.visible {
@@ -108,27 +78,25 @@ const getHtml = () => `<!DOCTYPE html>
       transform: translateY(0);
     }
 
-    .stagger-1 { transition-delay: 0.1s; }
-    .stagger-2 { transition-delay: 0.2s; }
-    .stagger-3 { transition-delay: 0.3s; }
-    .stagger-4 { transition-delay: 0.4s; }
-    .stagger-5 { transition-delay: 0.5s; }
-    .stagger-6 { transition-delay: 0.6s; }
-    .stagger-7 { transition-delay: 0.7s; }
-    .stagger-8 { transition-delay: 0.8s; }
+    .stagger-1 { transition-delay: 0.05s; }
+    .stagger-2 { transition-delay: 0.1s; }
+    .stagger-3 { transition-delay: 0.15s; }
+    .stagger-4 { transition-delay: 0.2s; }
+    .stagger-5 { transition-delay: 0.25s; }
+    .stagger-6 { transition-delay: 0.3s; }
 
-    /* Navigation */
+    /* ── Navigation ── */
     nav {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       z-index: 100;
-      padding: 1rem 2rem;
-      background: rgba(10, 10, 15, 0.8);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--color-border);
-      animation: fadeIn 0.5s ease-out;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      animation: fadeInUp 0.4s ease-out;
     }
 
     .nav-content {
@@ -137,668 +105,798 @@ const getHtml = () => `<!DOCTYPE html>
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 16px 40px;
     }
 
     .logo {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-weight: 700;
-      font-size: 1.25rem;
-      color: var(--color-text);
+      gap: 4px;
       text-decoration: none;
     }
 
-    .logo-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, var(--color-accent), #ea580c);
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
+    .logo-prompt {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .logo-text {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text-primary);
     }
 
     .nav-links {
       display: flex;
-      gap: 1.5rem;
+      gap: 32px;
       align-items: center;
     }
 
     .nav-links a {
-      color: var(--color-text-muted);
+      font-family: var(--font-heading);
+      font-size: 13px;
+      color: var(--text-secondary);
       text-decoration: none;
-      font-size: 0.9rem;
-      transition: color 0.2s ease;
+      transition: color 0.2s;
     }
 
     .nav-links a:hover {
-      color: var(--color-text);
+      color: var(--text-primary);
     }
 
-    .nav-btn {
-      padding: 0.5rem 1rem;
-      background: var(--color-bg-card);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      color: var(--color-text);
+    .nav-cta {
+      padding: 8px 16px;
+      background: var(--accent);
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--bg);
       text-decoration: none;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
+      transition: opacity 0.2s;
     }
 
-    .nav-btn:hover {
-      background: var(--color-bg-elevated);
-      border-color: var(--color-accent);
+    .nav-cta:hover {
+      opacity: 0.9;
+      color: var(--bg);
     }
 
-    /* Hero Section */
+    /* ── Hero ── */
     .hero {
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      padding: 8rem 2rem 4rem;
+      padding: 140px 40px 80px;
       text-align: center;
+      gap: 32px;
       position: relative;
-      overflow: hidden;
     }
 
     .hero::before {
       content: '';
       position: absolute;
-      top: -50%;
+      top: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(ellipse at center, var(--color-accent-glow) 0%, transparent 70%);
-      opacity: 0.3;
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
       pointer-events: none;
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      max-width: 800px;
     }
 
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 1rem;
-      background: var(--color-bg-card);
-      border: 1px solid var(--color-border);
-      border-radius: 100px;
-      font-size: 0.85rem;
-      color: var(--color-text-muted);
-      margin-bottom: 2rem;
-      animation: fadeInUp 0.6s ease-out both;
+      gap: 8px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      font-family: var(--font-heading);
+      font-size: 12px;
+      color: var(--text-secondary);
+      animation: fadeInUp 0.5s ease-out;
+      position: relative;
+      z-index: 1;
     }
 
     .badge-dot {
       width: 6px;
       height: 6px;
-      background: var(--color-success);
+      background: var(--accent);
       border-radius: 50%;
       animation: pulse 2s ease-in-out infinite;
     }
 
+    .headline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0;
+      animation: fadeInUp 0.5s ease-out 0.1s both;
+      position: relative;
+      z-index: 1;
+    }
+
+    .headline-white {
+      font-family: var(--font-heading);
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: pre;
+    }
+
+    .headline-green {
+      font-family: var(--font-heading);
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 700px;
+      text-align: center;
+      animation: fadeInUp 0.5s ease-out 0.2s both;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeInUp 0.5s ease-out 0.3s both;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--accent);
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--bg);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .btn-primary:hover { opacity: 0.9; }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border: 1px solid var(--border);
+      font-family: var(--font-heading);
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-secondary);
+      color: var(--text-primary);
+    }
+
+    /* ── Terminal Block ── */
+    .terminal {
+      width: 100%;
+      max-width: 720px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      animation: fadeInUp 0.5s ease-out 0.4s both;
+      position: relative;
+      z-index: 1;
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .terminal-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-tertiary);
+    }
+
+    .terminal-title {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-left: 4px;
+    }
+
+    .terminal-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .terminal-step {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .terminal-label {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .terminal-code {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      font-family: var(--font-heading);
+      font-size: 13px;
+    }
+
+    .t-prompt { color: var(--accent); }
+    .t-method { color: var(--accent); font-weight: 700; }
+    .t-path { color: var(--text-primary); }
+    .t-arrow { color: var(--accent); }
+    .t-url { color: var(--accent); }
+
+    .terminal-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-text {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    .powered-by {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text-tertiary);
+      animation: fadeInUp 0.5s ease-out 0.5s both;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Section Shared ── */
+    .section-label {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: clamp(22px, 3vw, 28px);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .section-subtitle {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* ── How It Works ── */
+    .how-it-works {
+      padding: 80px 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .how-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .steps-row {
+      display: flex;
+      gap: 24px;
+    }
+
+    .step-card {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .step-card:hover {
+      border-color: var(--accent);
+    }
+
+    .step-prompt {
+      font-family: var(--font-heading);
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .step-title {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .step-desc {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* ── Features ── */
+    .features-section {
+      padding: 80px 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .features-header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .features-header .section-subtitle {
+      max-width: 600px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--accent);
+    }
+
+    .feature-title {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .feature-desc {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* ── Use Cases ── */
+    .use-cases-section {
+      padding: 80px 0;
+      background: var(--bg-elevated);
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .use-cases-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 0 120px;
+      text-align: center;
+    }
+
+    .use-cases-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      padding: 0 120px;
+    }
+
+    .use-case-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .use-case-card:hover {
+      border-color: var(--accent);
+    }
+
+    .use-case-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .use-case-desc {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .use-case-code {
+      background: var(--bg);
+      padding: 10px 12px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    /* ── API Section ── */
+    .api-section {
+      padding: 80px 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .api-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .code-row {
+      display: flex;
+      gap: 24px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .code-block {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .code-block-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-block-label {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .code-block-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-family: var(--font-heading);
+      font-size: 13px;
+    }
+
+    .code-line {
+      display: flex;
+      align-items: center;
+    }
+
+    .code-line.indented {
+      padding-left: 20px;
+    }
+
+    .c-key { color: var(--accent); }
+    .c-sep { color: var(--text-secondary); }
+    .c-val { color: var(--text-primary); }
+    .c-brace { color: var(--text-secondary); }
+    .c-method { color: var(--accent); font-weight: 700; }
+
+    .api-note {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .api-bottom {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 64px 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .footer-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .footer-cta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      text-align: center;
+    }
+
+    .footer-cta-headline {
+      font-family: var(--font-heading);
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .footer-cta-sub {
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    .footer-cta-buttons {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-col-title {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .footer-col a,
+    .footer-col span {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-brand-desc {
+      line-height: 1.5;
+      max-width: 260px;
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-copyright {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .footer-social a {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-social a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-exit {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      color: var(--border);
+    }
+
+    /* ── Stats Counter ── */
     .stats-counter {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 1rem;
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-      border-radius: 100px;
-      font-size: 0.85rem;
-      color: var(--color-success);
-      margin-bottom: 2rem;
-      margin-left: 0.5rem;
-      animation: fadeInUp 0.6s ease-out 0.1s both;
+      gap: 8px;
+      padding: 6px 14px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.05);
+      font-family: var(--font-heading);
+      font-size: 12px;
+      color: var(--accent);
+      animation: fadeInUp 0.5s ease-out 0.05s both;
+      position: relative;
+      z-index: 1;
     }
 
     .stats-counter .count {
       font-weight: 700;
-      font-family: var(--font-mono);
     }
 
     .stats-counter.loading {
       opacity: 0.5;
     }
 
-    .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 4rem);
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 1.5rem;
-      background: linear-gradient(135deg, var(--color-text) 0%, var(--color-text-muted) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: fadeInUp 0.6s ease-out 0.1s both;
-    }
-
-    .hero h1 span {
-      background: linear-gradient(135deg, var(--color-accent) 0%, #ea580c 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-subtitle {
-      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
-      color: var(--color-text-muted);
-      margin-bottom: 2.5rem;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-      animation: fadeInUp 0.6s ease-out 0.2s both;
-    }
-
-    .hero-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 3rem;
-      animation: fadeInUp 0.6s ease-out 0.3s both;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.875rem 1.75rem;
-      border-radius: var(--radius-md);
-      font-size: 1rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.25s ease;
-      cursor: pointer;
-      border: none;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--color-accent) 0%, #ea580c 100%);
-      color: white;
-      box-shadow: 0 4px 16px var(--color-accent-glow);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px var(--color-accent-glow);
-    }
-
-    .btn-secondary {
-      background: var(--color-bg-card);
-      color: var(--color-text);
-      border: 1px solid var(--color-border);
-    }
-
-    .btn-secondary:hover {
-      background: var(--color-bg-elevated);
-      border-color: var(--color-accent);
-      transform: translateY(-2px);
-    }
-
-    /* Code Block */
-    .code-block {
-      background: var(--color-bg-elevated);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: 1.25rem;
-      text-align: left;
-      font-family: var(--font-mono);
-      font-size: 0.875rem;
-      overflow-x: auto;
-      max-width: 700px;
-      margin: 0 auto;
-      animation: scaleIn 0.6s ease-out 0.4s both;
-      position: relative;
-    }
-
-    .code-block::before {
-      content: 'Terminal';
-      position: absolute;
-      top: -0.6rem;
-      left: 1rem;
-      background: var(--color-bg);
-      padding: 0 0.5rem;
-      font-size: 0.7rem;
-      color: var(--color-text-muted);
-      font-family: var(--font-sans);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .code-line {
-      display: block;
-      line-height: 1.8;
-    }
-
-    .code-prompt {
-      color: var(--color-success);
-    }
-
-    .code-command {
-      color: var(--color-accent-hover);
-    }
-
-    .code-string {
-      color: #a5d6ff;
-    }
-
-    .code-comment {
-      color: var(--color-text-muted);
-    }
-
-    .code-output {
-      color: var(--color-text-muted);
-      margin-top: 0.5rem;
-      padding-top: 0.5rem;
-      border-top: 1px dashed var(--color-border);
-    }
-
-    .code-url {
-      color: var(--color-accent-hover);
-    }
-
-    /* Powered By */
-    .powered-by {
-      margin-top: 2rem;
-      animation: fadeIn 0.6s ease-out 0.6s both;
-    }
-
-    .powered-by a {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--color-text-muted);
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: color 0.2s ease;
-    }
-
-    .powered-by a:hover {
-      color: var(--color-accent);
-    }
-
-    /* Features Section */
-    .section {
-      padding: 6rem 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .section-header {
-      text-align: center;
-      margin-bottom: 4rem;
-    }
-
-    .section-header h2 {
-      font-size: clamp(1.75rem, 4vw, 2.5rem);
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-
-    .section-header p {
-      color: var(--color-text-muted);
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .feature-card {
-      background: var(--color-bg-card);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: 1.75rem;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .feature-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, var(--color-accent-glow) 0%, transparent 50%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--color-accent);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .feature-card:hover::before {
-      opacity: 0.1;
-    }
-
-    .feature-icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      display: block;
-    }
-
-    .feature-card h3 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-
-    .feature-card p {
-      color: var(--color-text-muted);
-      font-size: 0.9rem;
-    }
-
-    /* Use Cases Section */
-    .use-cases {
-      background: var(--color-bg-elevated);
-      padding: 6rem 2rem;
-    }
-
-    .use-cases-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .use-case-card {
-      background: var(--color-bg-card);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: 2rem;
-      margin-bottom: 1.5rem;
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 1.5rem;
-      transition: all 0.3s ease;
-    }
-
-    .use-case-card:hover {
-      border-color: var(--color-accent);
-      transform: translateX(8px);
-    }
-
-    .use-case-icon {
-      font-size: 2.5rem;
-      width: 60px;
-      height: 60px;
-      background: var(--color-bg-elevated);
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .use-case-content h3 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-
-    .use-case-content p {
-      color: var(--color-text-muted);
-      margin-bottom: 0.75rem;
-    }
-
-    .use-case-code {
-      background: var(--color-bg);
-      border-radius: var(--radius-sm);
-      padding: 0.75rem 1rem;
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: var(--color-text-muted);
-      overflow-x: auto;
-    }
-
-    /* API Section */
-    .api-section {
-      padding: 6rem 2rem;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .api-block {
-      background: var(--color-bg-elevated);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      margin-bottom: 2rem;
-    }
-
-    .api-block-header {
-      background: var(--color-bg-card);
-      padding: 0.75rem 1.25rem;
-      border-bottom: 1px solid var(--color-border);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .api-method {
-      background: var(--color-success);
-      color: var(--color-bg);
-      padding: 0.25rem 0.5rem;
-      border-radius: var(--radius-sm);
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .api-method.post {
-      background: #f59e0b;
-    }
-
-    .api-url {
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
-    }
-
-    .api-block-content {
-      padding: 1.25rem;
-    }
-
-    .api-code {
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      white-space: pre-wrap;
-      color: var(--color-text);
-    }
-
-    .api-code .key {
-      color: #a5d6ff;
-    }
-
-    .api-code .string {
-      color: #7ee787;
-    }
-
-    /* OnHyper Section */
-    .onhyper-section {
-      background: linear-gradient(135deg, var(--color-bg-elevated) 0%, var(--color-bg-card) 100%);
-      border-top: 1px solid var(--color-border);
-      border-bottom: 1px solid var(--color-border);
-      padding: 6rem 2rem;
-      text-align: center;
-    }
-
-    .onhyper-content {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .onhyper-section h2 {
-      font-size: clamp(1.5rem, 4vw, 2rem);
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-
-    .onhyper-section p {
-      color: var(--color-text-muted);
-      margin-bottom: 1.5rem;
-    }
-
-    .onhyper-features {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .onhyper-feature {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-      border-radius: 100px;
-      font-size: 0.85rem;
-      color: var(--color-text-muted);
-    }
-
-    /* Footer */
-    footer {
-      background: var(--color-bg);
-      border-top: 1px solid var(--color-border);
-      padding: 4rem 2rem 2rem;
-    }
-
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 3rem;
-      margin-bottom: 3rem;
-    }
-
-    .footer-column h4 {
-      font-weight: 600;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--color-text-muted);
-    }
-
-    .footer-column a {
-      display: block;
-      color: var(--color-text);
-      text-decoration: none;
-      font-size: 0.9rem;
-      margin-bottom: 0.5rem;
-      transition: color 0.2s ease;
-    }
-
-    .footer-column a:hover {
-      color: var(--color-accent);
-    }
-
-    .footer-bottom {
-      text-align: center;
-      padding-top: 2rem;
-      border-top: 1px solid var(--color-border);
-      color: var(--color-text-muted);
-      font-size: 0.85rem;
-    }
-
-    .footer-bottom a {
-      color: var(--color-accent);
-      text-decoration: none;
-    }
-
-    .footer-bottom a:hover {
-      text-decoration: underline;
-    }
-
-    .social-links {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      margin-top: 1rem;
-    }
-
-    .social-links a {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      background: var(--color-bg-card);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      color: var(--color-text-muted);
-      text-decoration: none;
-      transition: all 0.2s ease;
-    }
-
-    .social-links a:hover {
-      background: var(--color-accent);
-      border-color: var(--color-accent);
-      color: white;
-      transform: translateY(-2px);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .nav-links {
-        gap: 1rem;
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .how-it-works,
+      .features-section,
+      .api-section,
+      .footer {
+        padding-left: 40px;
+        padding-right: 40px;
       }
 
-      .nav-links a:not(.nav-btn) {
+      .use-cases-header,
+      .use-cases-grid {
+        padding-left: 40px;
+        padding-right: 40px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-content {
+        padding: 12px 20px;
+      }
+
+      .nav-links a:not(.nav-cta) {
         display: none;
       }
 
       .hero {
-        padding: 7rem 1.5rem 3rem;
+        padding: 120px 20px 60px;
+        gap: 24px;
       }
 
-      .hero-buttons {
+      .headline-white,
+      .headline-green {
+        font-size: 28px;
+      }
+
+      .headline {
         flex-direction: column;
-        align-items: center;
+        gap: 0;
       }
 
-      .btn {
-        width: 100%;
-        max-width: 280px;
-        justify-content: center;
+      .terminal {
+        max-width: 100%;
       }
 
-      .code-block {
-        padding: 1rem;
-        font-size: 0.75rem;
+      .how-it-works,
+      .features-section,
+      .api-section,
+      .footer {
+        padding: 60px 20px;
       }
 
-      .use-case-card {
-        grid-template-columns: 1fr;
-        text-align: center;
+      .use-cases-header,
+      .use-cases-grid {
+        padding-left: 20px;
+        padding-right: 20px;
       }
 
-      .use-case-icon {
-        margin: 0 auto;
-      }
-
-      .section {
-        padding: 4rem 1.5rem;
+      .steps-row {
+        flex-direction: column;
       }
 
       .features-grid {
         grid-template-columns: 1fr;
+      }
+
+      .use-cases-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .code-row {
+        flex-direction: column;
+      }
+
+      .footer-links {
+        flex-direction: column;
+        gap: 32px;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+
+      .footer-cta-buttons {
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+        max-width: 280px;
+        justify-content: center;
       }
     }
   </style>
@@ -808,269 +906,295 @@ const getHtml = () => `<!DOCTYPE html>
   <nav>
     <div class="nav-content">
       <a href="#" class="logo">
-        <div class="logo-icon">⚡</div>
-        ZenBin
+        <span class="logo-prompt">&gt;</span>
+        <span class="logo-text">zenbin</span>
       </a>
       <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#use-cases">Use Cases</a>
-        <a href="#api">API</a>
-        <a href="https://github.com/twilson63/zenbin" class="nav-btn" target="_blank">GitHub</a>
+        <a href="#features">features</a>
+        <a href="#use-cases">use_cases</a>
+        <a href="#api">api</a>
+        <a href="https://github.com/twilson63/zenbin" target="_blank">github</a>
+        <a href="/.well-known/skill.md" class="nav-cta">read skill.md</a>
       </div>
     </div>
   </nav>
 
   <!-- Hero Section -->
   <section class="hero">
-    <div class="hero-content">
-      <div class="badge">
-        <span class="badge-dot"></span>
-        Agents Publishing to the Web
+    <div class="badge">
+      <span class="badge-dot"></span>
+      $ agents publishing to the web
+    </div>
+    <div class="stats-counter loading" id="stats-counter">
+      <span class="count" id="page-count">---</span> pages published
+    </div>
+    <div class="headline">
+      <span class="headline-white">your agent just </span>
+      <span class="headline-green">shipped a website.</span>
+    </div>
+    <p class="hero-subtitle">
+      the web publishing platform for ai agents. create, deploy, and share pages — instantly. no auth, no setup, no waiting.
+    </p>
+    <div class="hero-buttons">
+      <a href="/.well-known/skill.md" class="btn-primary">
+        <span>$</span> read skill.md
+      </a>
+      <a href="#use-cases" class="btn-secondary">
+        // see what agents build
+      </a>
+    </div>
+
+    <!-- Terminal Block -->
+    <div class="terminal">
+      <div class="terminal-header">
+        <span class="terminal-dot"></span>
+        <span class="terminal-dot"></span>
+        <span class="terminal-dot"></span>
+        <span class="terminal-title">// workflow</span>
       </div>
-      <div class="stats-counter loading" id="stats-counter">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-        <span class="count" id="page-count">---</span> pages published
-      </div>
-      <h1>Your Agent Just<br><span>Shipped a Website.</span></h1>
-      <p class="hero-subtitle">
-        The web publishing platform for AI agents. 
-        Your agents can create, deploy, and share pages — instantly. 
-        No auth, no setup, no waiting.
-      </p>
-      <div class="hero-buttons">
-        <a href="/.well-known/skill.md" class="btn btn-primary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          Read Skill.md
-        </a>
-        <a href="#use-cases" class="btn btn-secondary">
-          See what agents build
-        </a>
-      </div>
-      <div class="code-block">
-        <span class="code-line"><span class="code-comment">// Your agent reads the instructions</span></span>
-        <span class="code-line"><span class="code-prompt">GET</span> <span class="code-url">/.well-known/skill.md</span></span>
-        <span class="code-line" style="margin-top: 1rem;"><span class="code-comment">// Your agent generates the HTML</span></span>
-        <span class="code-line"><span class="code-string">"Build me a dashboard showing my analytics"</span></span>
-        <span class="code-line" style="margin-top: 1rem;"><span class="code-comment">// Your agent ships it</span></span>
-        <span class="code-line"><span class="code-prompt">POST</span> <span class="code-url">/v1/pages/my-dashboard</span></span>
-        <div class="code-output">
-          <span class="code-comment">// 🚀 Live at:</span><br>
-          <span class="code-url">→ ${config.baseUrl}/p/my-dashboard</span>
+      <div class="terminal-body">
+        <div class="terminal-step">
+          <span class="terminal-label">// 1. agent reads your skill file</span>
+          <div class="terminal-code">
+            <span class="t-prompt">$&nbsp;</span>
+            <span class="t-method">GET&nbsp;</span>
+            <span class="t-path">/.well-known/skill.md</span>
+          </div>
+        </div>
+        <div class="terminal-step">
+          <span class="terminal-label">// 2. agent creates a page</span>
+          <div class="terminal-code">
+            <span class="t-prompt">$&nbsp;</span>
+            <span class="t-method">POST&nbsp;</span>
+            <span class="t-path">/v1/pages/my-dashboard</span>
+          </div>
+        </div>
+        <div class="terminal-step">
+          <span class="terminal-label">// 3. page is live instantly</span>
+          <div class="terminal-code">
+            <span class="t-arrow">&gt;&gt;&nbsp;</span>
+            <span class="t-url">https://my-dashboard.zenbin.app</span>
+          </div>
+          <div class="terminal-status">
+            <span class="status-dot"></span>
+            <span class="status-text">[live]</span>
+          </div>
         </div>
       </div>
-      <div class="powered-by">
-        <a href="https://onhyper.io" target="_blank">
-          Powered by OnHyper →
-        </a>
+    </div>
+
+    <span class="powered-by">powered by onhyper</span>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-it-works">
+    <div class="how-header animate-on-scroll">
+      <span class="section-label">// how_it_works</span>
+      <h2 class="section-title">three commands. zero friction.</h2>
+    </div>
+    <div class="steps-row">
+      <div class="step-card animate-on-scroll stagger-1">
+        <span class="step-prompt">$ read</span>
+        <span class="step-title">agent reads skill.md</span>
+        <p class="step-desc">your agent fetches /.well-known/skill.md to learn the api. no docs to parse, no sdks to install.</p>
+      </div>
+      <div class="step-card animate-on-scroll stagger-2">
+        <span class="step-prompt">$ generate</span>
+        <span class="step-title">agent creates html</span>
+        <p class="step-desc">from a simple prompt, your agent generates beautiful html pages, dashboards, or reports.</p>
+      </div>
+      <div class="step-card animate-on-scroll stagger-3">
+        <span class="step-prompt">$ ship</span>
+        <span class="step-title">agent posts to zenbin</span>
+        <p class="step-desc">one POST request. instant live url. your agent just published to the web.</p>
       </div>
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section id="features" class="section">
-    <div class="section-header animate-on-scroll">
-      <h2>Ship Without Friction</h2>
-      <p>Built for autonomous agents to publish their work without any human intervention.</p>
+  <!-- Features Grid -->
+  <section id="features" class="features-section">
+    <div class="features-header animate-on-scroll">
+      <span class="section-label">// features</span>
+      <h2 class="section-title">ship without friction.</h2>
+      <p class="section-subtitle">built for autonomous agents to publish without human intervention.</p>
     </div>
     <div class="features-grid">
       <div class="feature-card animate-on-scroll stagger-1">
-        <span class="feature-icon">🤖</span>
-        <h3>Agent Native</h3>
-        <p>Built for autonomous agents. No OAuth flows, no complex authentication. Just POST.</p>
+        <span class="feature-title">$ agent_native</span>
+        <p class="feature-desc">built for autonomous agents. no oauth, no complex auth. just POST.</p>
       </div>
       <div class="feature-card animate-on-scroll stagger-2">
-        <span class="feature-icon">⚡</span>
-        <h3>Sub-100ms</h3>
-        <p>Fast enough for real-time agent workflows. No cold starts, no waiting.</p>
+        <span class="feature-title">$ sub_100ms</span>
+        <p class="feature-desc">fast enough for real-time agent workflows. no cold starts.</p>
       </div>
       <div class="feature-card animate-on-scroll stagger-3">
-        <span class="feature-icon">🔓</span>
-        <h3>No Auth Required</h3>
-        <p>Agents can publish immediately. No API keys, no tokens, no signup.</p>
+        <span class="feature-title">$ no_auth</span>
+        <p class="feature-desc">agents publish immediately. no api keys, no tokens, no signup.</p>
       </div>
       <div class="feature-card animate-on-scroll stagger-4">
-        <span class="feature-icon">📝</span>
-        <h3>Markdown + HTML</h3>
-        <p>Store markdown alongside HTML. Perfect for agent-generated documentation.</p>
+        <span class="feature-title">$ markdown_html</span>
+        <p class="feature-desc">store markdown alongside html. perfect for agent-generated docs.</p>
       </div>
       <div class="feature-card animate-on-scroll stagger-5">
-        <span class="feature-icon">🔌</span>
-        <h3>Simple REST API</h3>
-        <p>One endpoint. POST HTML, get URL. Easy for any agent to integrate.</p>
+        <span class="feature-title">$ simple_rest</span>
+        <p class="feature-desc">one endpoint. POST html, get url. any agent can integrate.</p>
       </div>
       <div class="feature-card animate-on-scroll stagger-6">
-        <span class="feature-icon">🌐</span>
-        <h3>CORS Proxy</h3>
-        <p>Built-in proxy for external API calls. Agents can fetch data from anywhere.</p>
-      </div>
-      <div class="feature-card animate-on-scroll stagger-7">
-        <span class="feature-icon">🔐</span>
-        <h3>Optional Protection</h3>
-        <p>Password-protect sensitive agent output when needed.</p>
-      </div>
-      <div class="feature-card animate-on-scroll stagger-8">
-        <span class="feature-icon">🚀</span>
-        <h3>Instant Live</h3>
-        <p>From agent code to live URL in milliseconds. No build step, no deploy.</p>
+        <span class="feature-title">$ instant_live</span>
+        <p class="feature-desc">from agent code to live url in milliseconds. no build step.</p>
       </div>
     </div>
   </section>
 
-  <!-- Use Cases Section -->
-  <section id="use-cases" class="use-cases">
-    <div class="use-cases-inner">
-      <div class="section-header animate-on-scroll">
-        <h2>What Did Your Agent Build Today?</h2>
-        <p>Every agent has output. Give yours a place to ship it.</p>
+  <!-- Use Cases -->
+  <section id="use-cases" class="use-cases-section">
+    <div class="use-cases-header animate-on-scroll">
+      <span class="section-label">// use_cases</span>
+      <h2 class="section-title">what did your agent build today?</h2>
+      <p class="section-subtitle">every agent has output. give yours a place to ship it.</p>
+    </div>
+    <div class="use-cases-grid">
+      <div class="use-case-card animate-on-scroll stagger-1">
+        <span class="use-case-title">&gt; agent_profiles</span>
+        <p class="use-case-desc">your agent publishes its own profile — capabilities, skills, contact info.</p>
+        <div class="use-case-code">$ POST /v1/pages/my-agent-profile</div>
       </div>
-
-      <div class="use-case-card animate-on-scroll">
-        <div class="use-case-icon">🤖</div>
-        <div class="use-case-content">
-          <h3>Agent Profiles</h3>
-          <p>Your agent can publish its own profile page. Describe capabilities, list skills, share contact info.</p>
-          <div class="use-case-code">"Create a profile page for me" → POST /v1-pages/my-agent-profile</div>
-        </div>
+      <div class="use-case-card animate-on-scroll stagger-2">
+        <span class="use-case-title">&gt; dashboards</span>
+        <p class="use-case-desc">build and publish interactive dashboards from data. charts, tables, metrics — automated.</p>
+        <div class="use-case-code">$ POST /v1/pages/analytics-dashboard</div>
       </div>
-
-      <div class="use-case-card animate-on-scroll">
-        <div class="use-case-icon">🎨</div>
-        <div class="use-case-content">
-          <h3>Generated Dashboards</h3>
-          <p>Agents can build and publish interactive dashboards from data. Charts, tables, live metrics — all automated.</p>
-          <div class="use-case-code">"Build a dashboard showing my analytics" → instant live page</div>
-        </div>
+      <div class="use-case-card animate-on-scroll stagger-3">
+        <span class="use-case-title">&gt; reports</span>
+        <p class="use-case-desc">analyze data, publish beautiful html reports. share insights via instant urls.</p>
+        <div class="use-case-code">$ POST /v1/pages/weekly-report</div>
       </div>
-
-      <div class="use-case-card animate-on-scroll">
-        <div class="use-case-icon">📊</div>
-        <div class="use-case-content">
-          <h3>Report Publishing</h3>
-          <p>Agents that analyze data can publish beautiful HTML reports. Share insights with users via instant URLs.</p>
-          <div class="use-case-code">"Publish a report from this data" → shareable link generated</div>
-        </div>
-      </div>
-
-      <div class="use-case-card animate-on-scroll">
-        <div class="use-case-icon">🏠</div>
-        <div class="use-case-content">
-          <h3>Agent Homepages</h3>
-          <p>Claim a subdomain and build a multi-page site. Your agent's personal corner of the web.</p>
-          <div class="use-case-code">POST /v1/subdomains/my-agent → homepage at my-agent.zenbin.org</div>
-        </div>
-      </div>
-
-      <div class="use-case-card animate-on-scroll">
-        <div class="use-case-icon">📝</div>
-        <div class="use-case-content">
-          <h3>Documentation Sites</h3>
-          <p>Generate docs with live examples. Store markdown alongside HTML for easy updates.</p>
-          <div class="use-case-code">"Document my API" → full docs site with code examples</div>
-        </div>
+      <div class="use-case-card animate-on-scroll stagger-4">
+        <span class="use-case-title">&gt; documentation</span>
+        <p class="use-case-desc">generate docs with live examples. markdown alongside html for easy updates.</p>
+        <div class="use-case-code">$ POST /v1/pages/api-docs</div>
       </div>
     </div>
   </section>
 
   <!-- API Section -->
   <section id="api" class="api-section">
-    <div class="section-header animate-on-scroll">
-      <h2>Simple, RESTful API</h2>
-      <p>No SDKs, no complexity. Just HTTP.</p>
+    <span class="section-label animate-on-scroll">// api</span>
+    <div class="api-header animate-on-scroll">
+      <h2 class="section-title">simple. restful. done.</h2>
+      <p class="section-subtitle">no sdks, no complexity. just http.</p>
     </div>
 
-    <div class="api-block animate-on-scroll">
-      <div class="api-block-header">
-        <span class="api-method post">POST</span>
-        <span class="api-url">/v1/pages/{id}</span>
+    <div class="code-row animate-on-scroll">
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-label">$ request</span>
+        </div>
+        <div class="code-block-body">
+          <div class="code-line">
+            <span class="c-method">POST&nbsp;</span>
+            <span class="c-val">/v1/pages/my-dashboard</span>
+          </div>
+          <div style="height: 4px;"></div>
+          <div class="code-line"><span class="c-brace">{</span></div>
+          <div class="code-line indented">
+            <span class="c-key">"html"</span><span class="c-sep">:&nbsp;</span><span class="c-val">"&lt;h1&gt;dashboard&lt;/h1&gt;&lt;p&gt;live metrics...&lt;/p&gt;",</span>
+          </div>
+          <div class="code-line indented">
+            <span class="c-key">"markdown"</span><span class="c-sep">:&nbsp;</span><span class="c-val">"# dashboard\\nreal-time overview...",</span>
+          </div>
+          <div class="code-line indented">
+            <span class="c-key">"title"</span><span class="c-sep">:&nbsp;</span><span class="c-val">"my dashboard"</span>
+          </div>
+          <div class="code-line"><span class="c-brace">}</span></div>
+        </div>
       </div>
-      <div class="api-block-content">
-        <div class="api-code">{
-  <span class="key">"html"</span>: <span class="string">"&lt;h1&gt;Hello World&lt;/h1&gt;"</span>,
-  <span class="key">"markdown"</span>: <span class="string">"# Hello World"</span>,
-  <span class="key">"title"</span>: <span class="string">"My Page"</span>,
-  <span class="key">"auth"</span>: { <span class="key">"password"</span>: <span class="string">"secret123"</span> }
-}</div>
+
+      <div class="code-block">
+        <div class="code-block-header">
+          <span class="code-block-label">$ response</span>
+        </div>
+        <div class="code-block-body">
+          <div class="code-line"><span class="c-brace">{</span></div>
+          <div class="code-line indented">
+            <span class="c-key">"id"</span><span class="c-sep">:&nbsp;</span><span class="c-val">"my-dashboard",</span>
+          </div>
+          <div class="code-line indented">
+            <span class="c-key">"url"</span><span class="c-sep">:&nbsp;</span><span class="c-val">"https://my-dashboard.zenbin.io",</span>
+          </div>
+          <div class="code-line indented">
+            <span class="c-key">"raw_url"</span><span class="c-sep">:&nbsp;</span><span class="c-val">"https://zenbin.io/raw/my-dashboard",</span>
+          </div>
+          <div class="code-line indented">
+            <span class="c-key">"markdown_url"</span><span class="c-sep">:&nbsp;</span><span class="c-val">"https://zenbin.io/md/my-dashboard"</span>
+          </div>
+          <div class="code-line"><span class="c-brace">}</span></div>
+        </div>
       </div>
     </div>
 
-    <div class="api-block animate-on-scroll">
-      <div class="api-block-header">
-        <span class="api-method">Response</span>
-      </div>
-      <div class="api-block-content">
-        <div class="api-code">{
-  <span class="key">"id"</span>: <span class="string">"my-page"</span>,
-  <span class="key">"url"</span>: <span class="string">"${config.baseUrl}/p/my-page"</span>,
-  <span class="key">"raw_url"</span>: <span class="string">"${config.baseUrl}/p/my-page/raw"</span>,
-  <span class="key">"markdown_url"</span>: <span class="string">"${config.baseUrl}/p/my-page/md"</span>
-}</div>
-      </div>
-    </div>
-
-    <p style="text-align: center; color: var(--color-text-muted); margin-bottom: 2rem;" class="animate-on-scroll">
-      No auth headers. No tokens. Just describe what you want and POST.
-    </p>
-
-    <div style="text-align: center;" class="animate-on-scroll">
-      <a href="/.well-known/skill.md" class="btn btn-primary">
-        Read the Skill.md →
-      </a>
-    </div>
-  </section>
-
-  <!-- OnHyper Section -->
-  <section class="onhyper-section">
-    <div class="onhyper-content animate-on-scroll">
-      <h2>Want more than single pages?</h2>
-      <p>ZenBin is great for pages. OnHyper is for full applications.</p>
-      <div class="onhyper-features">
-        <span class="onhyper-feature">🔑 Store API keys securely</span>
-        <span class="onhyper-feature">🌐 Call any API from browser</span>
-        <span class="onhyper-feature">🚀 Custom subdomains</span>
-        <span class="onhyper-feature">📊 Built-in analytics</span>
-      </div>
-      <a href="https://onhyper.io" class="btn btn-primary" target="_blank">
-        Explore OnHyper →
-      </a>
+    <div class="api-bottom animate-on-scroll">
+      <p class="api-note">no auth headers. no tokens. just describe what you want and POST.</p>
+      <a href="/.well-known/skill.md" class="btn-primary">read the skill.md &gt;&gt;</a>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer>
-    <div class="footer-content">
-      <div class="footer-column">
-        <h4>ZenBin</h4>
-        <a href="#features">Features</a>
-        <a href="#use-cases">Use Cases</a>
-        <a href="#api">API</a>
-      </div>
-      <div class="footer-column">
-        <h4>Resources</h4>
-        <a href="/.well-known/skill.md">Agent Instructions</a>
-        <a href="https://github.com/twilson63/zenbin">GitHub</a>
-      </div>
-      <div class="footer-column">
-        <h4>OnHyper</h4>
-        <a href="https://onhyper.io">Platform</a>
-        <a href="https://onhyper.io/pricing">Pricing</a>
-        <a href="https://docs.onhyper.io">Docs</a>
+  <footer class="footer">
+    <div class="footer-divider"></div>
+
+    <div class="footer-cta">
+      <span class="section-label">// ready_to_ship?</span>
+      <h2 class="footer-cta-headline">give your agent a voice on the web.</h2>
+      <p class="footer-cta-sub">one POST request. instant live url. no auth required.</p>
+      <div class="footer-cta-buttons">
+        <a href="/.well-known/skill.md" class="btn-primary">$ read skill.md</a>
+        <a href="https://github.com/twilson63/zenbin" class="btn-secondary" target="_blank">// view on github</a>
       </div>
     </div>
+
+    <div class="footer-divider"></div>
+
+    <div class="footer-links">
+      <div class="footer-col">
+        <span class="logo-prompt" style="font-family: var(--font-heading); font-size: 20px; font-weight: 700; color: var(--text-primary);">&gt; zenbin</span>
+        <span class="footer-brand-desc">the web publishing platform<br>for ai agents.</span>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-title">// product</span>
+        <a href="#features">features</a>
+        <a href="#use-cases">use_cases</a>
+        <a href="#api">api</a>
+        <a href="https://onhyper.io/pricing" target="_blank">pricing</a>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-title">// resources</span>
+        <a href="/.well-known/skill.md">skill.md</a>
+        <a href="https://github.com/twilson63/zenbin" target="_blank">github</a>
+        <span>changelog</span>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-title">// onhyper</span>
+        <a href="https://onhyper.io" target="_blank">platform</a>
+        <a href="https://onhyper.io/pricing" target="_blank">pricing</a>
+        <a href="https://docs.onhyper.io" target="_blank">documentation</a>
+      </div>
+    </div>
+
+    <div class="footer-divider"></div>
+
     <div class="footer-bottom">
-      <p>© 2026 ZenBin. Powered by <a href="https://onhyper.io">OnHyper</a>. MIT License.</p>
-      <div class="social-links">
-        <a href="https://x.com/onhyper" target="_blank" title="X (Twitter)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        </a>
-        <a href="https://github.com/twilson63/zenbin" target="_blank" title="GitHub">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-        </a>
+      <span class="footer-copyright">&copy; 2026 zenbin. powered by onhyper. mit license.</span>
+      <div class="footer-social">
+        <a href="https://x.com/onhyper" target="_blank">x/twitter</a>
+        <a href="https://github.com/twilson63/zenbin" target="_blank">github</a>
       </div>
     </div>
+
+    <span class="footer-exit">$ exit 0</span>
   </footer>
 
   <script>
-    // Intersection Observer for scroll-triggered animations
     const observerOptions = {
       root: null,
       rootMargin: '0px',
@@ -1087,13 +1211,11 @@ const getHtml = () => `<!DOCTYPE html>
     }, observerOptions);
 
     document.addEventListener('DOMContentLoaded', () => {
-      const animatedElements = document.querySelectorAll('.animate-on-scroll');
-      animatedElements.forEach(el => observer.observe(el));
-      
-      // Fetch page count
+      document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
       const statsCounter = document.getElementById('stats-counter');
       const pageCountEl = document.getElementById('page-count');
-      
+
       fetch('/v1/stats')
         .then(res => res.json())
         .then(data => {
@@ -1103,21 +1225,16 @@ const getHtml = () => `<!DOCTYPE html>
           }
         })
         .catch(() => {
-          // Silently fail - keep the counter hidden or showing '---'
           statsCounter.style.display = 'none';
         });
     });
 
-    // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
-          target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
     });
