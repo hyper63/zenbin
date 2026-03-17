@@ -3,13 +3,10 @@
 
 import { Context, Next } from 'hono';
 import jwt from 'jsonwebtoken';
+import { config } from '../config.js';
 
 // Environment variable - must match portal's ZENBIN_JWT_SECRET
 const ZENBIN_JWT_SECRET = process.env.ZENBIN_JWT_SECRET || 'change-me-in-production';
-
-// Rate limit for free users (no API key)
-const FREE_MONTHLY_LIMIT = 10;
-const FREE_MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 // In-memory usage tracking (replace with Redis for production)
 const freeUsage = new Map<string, { count: number; resetTime: number }>();
@@ -71,21 +68,21 @@ async function handleFreeTier(c: Context, next: Next) {
   
   // Reset if window expired
   if (!usage || now > usage.resetTime) {
-    usage = { count: 0, resetTime: now + FREE_MONTHLY_WINDOW_MS };
+    usage = { count: 0, resetTime: now + config.freeTier.monthlyWindowMs };
     freeUsage.set(clientId, usage);
   }
   
-  if (usage.count >= FREE_MONTHLY_LIMIT) {
+  if (usage.count >= config.freeTier.monthlyLimit) {
     c.header('Retry-After', String(Math.floor((usage.resetTime - now) / 1000)));
     return c.json({ 
       error: 'Free tier limit exceeded',
-      limit: FREE_MONTHLY_LIMIT,
+      limit: config.freeTier.monthlyLimit,
       resetsAt: new Date(usage.resetTime).toISOString(),
     }, 429);
   }
   
   usage.count++;
-  c.set('user', { plan: 'free', monthlyRequests: FREE_MONTHLY_LIMIT } as any);
+  c.set('user', { plan: 'free', monthlyRequests: config.freeTier.monthlyLimit } as any);
   await next();
 }
 

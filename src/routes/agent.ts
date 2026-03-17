@@ -60,11 +60,23 @@ Content-Type: application/json
 
 \`\`\`json
 {
-  "error": "Page ID \\"my-page\\" is already taken"
+  "error": "Page ID \\"my-page\\" is already taken. Use ?overwrite=true to replace."
 }
 \`\`\`
 
-Page IDs are permanent and cannot be overwritten. Choose a unique ID for each page.
+**Page Updates:**
+
+- **Subdomain pages**: Can be updated directly by posting again with the same ID and \`X-Subdomain\` header. No overwrite flag needed — subdomain ownership grants update rights.
+- **Non-subdomain pages**: Require \`?overwrite=true\` query parameter to replace existing content. Returns 200 OK (not 201 Created).
+- **Password-protected pages**: Send password via Basic Auth header to update.
+
+**Delete a Page:**
+
+\`\`\`
+DELETE ${config.baseUrl}/v1/pages/{id}
+\`\`\`
+
+For password-protected pages, include Basic Auth credentials. For subdomain pages, include the \`X-Subdomain\` header.
 
 ## Encoding Options
 
@@ -203,6 +215,7 @@ www, api, mail, admin, blog, docs, help, support, status, billing, account, acco
 - Maximum ID length: ${config.maxIdLength} characters
 - Allowed ID characters: \`A-Za-z0-9._-\`
 - Max pages per subdomain: 100 pages
+- Free tier: ${config.freeTier.monthlyLimit} requests per 30 days (without API key)
 
 ## Viewing Pages
 

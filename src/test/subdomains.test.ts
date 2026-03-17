@@ -233,7 +233,7 @@ describe('Subdomains', () => {
         body: JSON.stringify({ html: '<h1>First</h1>' }),
       });
       
-      // Second publish to same page
+      // Second publish to same page - now updates
       const res = await app.request('/v1/pages/index', {
         method: 'POST',
         headers: {
@@ -243,8 +243,7 @@ describe('Subdomains', () => {
         body: JSON.stringify({ html: '<h1>Second</h1>' }),
       });
       
-      expect(res.status).toBe(409);
-      expect((await res.json() as { error: string }).error).toContain('already exists');
+      expect(res.status).toBe(200); // Update returns 200
     });
   });
 

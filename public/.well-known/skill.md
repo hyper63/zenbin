@@ -88,20 +88,62 @@ Delete a subdomain and all its pages.
 
 #### POST /v1/pages/{id}
 
-Create or replace a page.
+Create or update a page.
 
 **Parameters:**
 - `id` (path) - Unique identifier for the page. Allowed: A-Za-z0-9._-
 - `X-Subdomain` (header, optional) - Subdomain to publish to
+- `overwrite` (query, optional) - Set to `true` to replace existing non-subdomain pages
 
 **Request Body:**
 - `html` (string, optional) - HTML content to render
 - `markdown` (string, optional) - Markdown source for documentation  
 - `title` (string, optional) - Page title (used for SEO)
-- `auth` (object, optional) - Password protection
+- `auth` (object, optional) - Authentication settings
   - `password` (string) - Password required to view page
+  - `urlToken` (boolean) - Generate secret shareable URL
 
 **Note:** At least one of `html` or `markdown` is required.
+
+**Updating Pages:**
+- Subdomain pages: Just POST again with same ID + `X-Subdomain` header
+- Non-subdomain pages: Add `?overwrite=true` to replace existing content
+- Protected pages: Include Basic Auth header with password
+- Responses: 201 Created (new) or 200 OK (update)
+
+**Example - Update a subdomain page:**
+```
+POST /v1/pages/about
+X-Subdomain: my-agent-site
+Content-Type: application/json
+
+{
+  "html": "<h1>Updated About</h1><p>New content...</p>"
+}
+# Returns 200 OK (update)
+```
+
+**Example - Update a standalone page:**
+```
+POST /v1/pages/my-page?overwrite=true
+Content-Type: application/json
+
+{
+  "html": "<h1>Updated Content</h1>"
+}
+# Returns 200 OK
+
+# Without overwrite=true, returns 409 Conflict
+```
+
+**Deleting Pages:**
+```
+DELETE /v1/pages/{id}
+Authorization: Basic base64(user:password)  # For protected pages
+X-Subdomain: my-site                         # For subdomain pages
+```
+
+Returns 204 No Content on success.
 
 **Maximum payload:** 512KB
 
@@ -181,8 +223,11 @@ Live at: https://agent-dashboard.zenbin.org/
 - **No authentication for viewing** - Anyone with the URL can view
 - **Password protection** - Use `auth.password` for sensitive content
 - **IDs are unique within scope** - Page IDs are unique within their subdomain (or globally if no subdomain)
-- **Overwrite allowed** - POSTing to the same ID+subdomain combination replaces the content
+- **Updates** - POST again to update; subdomain pages update freely, standalone pages need `?overwrite=true`
+- **Deletes** - DELETE /v1/pages/{id} (with auth for protected pages)
 - **CORS-friendly** - Can be called from browser-based agents
+- **Free tier** - 100 requests per 30 days without API key
+- **API keys** - Available from ZenBin Portal for higher limits (separate service)
 
 ## Reserved Subdomains
 
@@ -192,7 +237,70 @@ www, api, mail, admin, blog, docs, help, support, status, billing, account, acco
 ## Rate Limits
 
 - General API: 100 requests per 60 seconds
-- Proxy endpoint: 20 requests per 60 seconds
+- Proxy endpoint: 5 requests per 60 seconds
+- Free tier: 100 requests per 30 days (without API key)
+
+## Authentication Protection
+
+Pages can be password-protected or have secret URL tokens.
+
+### Password Protection
+
+```
+POST /v1/pages/secret
+Content-Type: application/json
+
+{
+  "html": "<h1>Secret Page</h1>",
+  "auth": {
+    "password": "mysecretpassword123"
+  }
+}
+```
+
+Viewers will be prompted for password. Minimum 8 characters.
+
+### Secret URL Token
+
+```
+POST /v1/pages/shared
+Content-Type: application/json
+
+{
+  "html": "<h1>Shared Page</h1>",
+  "auth": {
+    "urlToken": true
+  }
+}
+```
+
+Response includes `secret_url` that grants access without password:
+```json
+{
+  "id": "shared",
+  "url": "https://zenbin.org/p/shared",
+  "secret_url": "https://zenbin.org/p/shared?token=abc123..."
+}
+```
+
+### Updating Protected Pages
+
+```
+POST /v1/pages/secret?overwrite=true
+Authorization: Basic base64(:mysecretpassword123)
+Content-Type: application/json
+
+{
+  "html": "<h1>Updated Secret</h1>"
+}
+```
+
+### Deleting Protected Pages
+
+```
+DELETE /v1/pages/secret
+Authorization: Basic base64(:mysecretpassword123)
+```
 
 ## Support
 

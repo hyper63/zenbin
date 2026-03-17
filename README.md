@@ -79,8 +79,33 @@ Content-Type: application/json
 ```
 
 - Returns `201 Created` for new pages
-- Returns `200 OK` when replacing existing pages
+- Returns `200 OK` when updating existing pages
 - `markdown_url` is only included when `markdown` is provided
+
+### Updating Pages
+
+**Subdomain pages:** Just POST again with the same ID and `X-Subdomain` header. No special flag needed.
+
+**Non-subdomain pages:** Add `?overwrite=true` query parameter:
+```bash
+POST /v1/pages/my-page?overwrite=true
+```
+
+**Password-protected pages:** Include Basic Auth header when updating:
+```bash
+curl -X POST http://localhost:3000/v1/pages/secret?overwrite=true \
+  -H "Content-Type: application/json" \
+  -u ":mypassword123" \
+  -d '{"html": "<h1>Updated</h1>"}'
+```
+
+### Delete a Page
+
+```bash
+DELETE /v1/pages/{id}
+```
+
+For password-protected pages, include Basic Auth. For subdomain pages, include `X-Subdomain` header.
 
 ### View a Page
 
@@ -352,6 +377,13 @@ Configure via environment variables or `.env` file:
 | `AUTH_MAX_FAILED_ATTEMPTS` | `5` | Max failed auth attempts before lockout |
 | `AUTH_FAILED_ATTEMPT_WINDOW_MS` | `900000` | Failed attempt tracking window (15 min) |
 | `AUTH_LOCKOUT_DURATION_MS` | `900000` | Lockout duration after max failures (15 min) |
+| `FREE_TIER_MONTHLY_LIMIT` | `100` | Free tier request limit per 30 days |
+| `FREE_TIER_WINDOW_MS` | `2592000000` | Free tier window in ms (30 days) |
+| `SUBDOMAINS_ENABLED` | `true` | Enable subdomain feature |
+| `SUBDOMAIN_MAX_LENGTH` | `63` | Max subdomain name length |
+| `SUBDOMAIN_MAX_PAGES` | `100` | Max pages per subdomain |
+| `SUBDOMAIN_RESERVED_NAMES` | (see config) | Comma-separated reserved names |
+| `SUBDOMAIN_BASE_DOMAIN` | `zenbin.org` | Base domain for subdomains |
 
 ## Page ID Rules
 

@@ -1,11 +1,13 @@
 import { Hono } from 'hono';
 import { config } from '../config.js';
-import { savePage, getPage, getSubdomain, incrementSubdomainPageCount } from '../storage/db.js';
+import { savePage, getPage, getSubdomain, incrementSubdomainPageCount, decrementSubdomainPageCount } from '../storage/db.js';
 import { generateEtag } from '../utils/etag.js';
 import { validateId, validatePageBody, decodeHtml, decodeMarkdown, validateAuthInput } from '../utils/validation.js';
-import { hashPassword, generateUrlToken } from '../utils/auth.js';
+import { hashPassword, generateUrlToken, verifyPassword, parseBasicAuth } from '../utils/auth.js';
 import { validateSubdomainName } from './subdomains.js';
 import { trackApiCall, trackPageCreated } from '../analytics/posthog.js';
+import { checkAuthRateLimit, recordFailedAttempt, resetAuthAttempts } from '../middleware/authRateLimit.js';
+import { deletePage as deletePageFromDb } from '../storage/db.js';
 
 const pages = new Hono();
 
@@ -77,17 +79,48 @@ pages.post('/:id', async (c) => {
     }
   }
 
-  // For non-subdomain pages, check if ID is already taken
-  if (!subdomain) {
-    const existing = getPage(id);
-    if (existing) {
-      return c.json({ error: `Page ID "${id}" is already taken` }, 409);
+  // Check for existing page
+  const existingPage = subdomain ? getPage(id, subdomain) : getPage(id);
+  
+  // For non-subdomain pages: require overwrite=true to replace
+  // For subdomain pages: allow update (ownership via subdomain claim)
+  if (existingPage && !subdomain) {
+    const overwrite = c.req.query('overwrite') === 'true';
+    if (!overwrite) {
+      return c.json({ error: `Page ID "${id}" is already taken. Use ?overwrite=true to replace.` }, 409);
     }
-  } else {
-    // For subdomain pages, check if ID exists within that subdomain
-    const existing = getPage(id, subdomain);
-    if (existing) {
-      return c.json({ error: `Page "${id}" already exists in subdomain "${subdomain}"` }, 409);
+    // For pages with auth, verify password before allowing overwrite
+    if (existingPage.auth?.passwordHash) {
+      const authHeader = c.req.header('Authorization');
+      const basicAuth = parseBasicAuth(authHeader);
+      
+      if (!basicAuth) {
+        c.header('WWW-Authenticate', `Basic realm="ZenBin-${id}"`);
+        return c.json({ error: 'Authentication required to overwrite this page' }, 401);
+      }
+      
+      const validPassword = await verifyPassword(basicAuth.password, existingPage.auth.passwordHash);
+      if (!validPassword) {
+        return c.json({ error: 'Invalid credentials' }, 401);
+      }
+    }
+  }
+  
+  if (existingPage && subdomain) {
+    // For subdomain pages, verify ownership via password if set
+    if (existingPage.auth?.passwordHash) {
+      const authHeader = c.req.header('Authorization');
+      const basicAuth = parseBasicAuth(authHeader);
+      
+      if (!basicAuth) {
+        c.header('WWW-Authenticate', `Basic realm="ZenBin-${subdomain}-${id}"`);
+        return c.json({ error: 'Authentication required to update this page' }, 401);
+      }
+      
+      const validPassword = await verifyPassword(basicAuth.password, existingPage.auth.passwordHash);
+      if (!validPassword) {
+        return c.json({ error: 'Invalid credentials' }, 401);
+      }
     }
   }
 
@@ -208,11 +241,60 @@ pages.post('/:id', async (c) => {
     endpoint: '/v1/pages/:id',
     method: 'POST',
     pageId: page.id,
-    statusCode: 201,
+    statusCode: created ? 201 : 200,
   });
 
   c.header('ETag', page.etag);
-  return c.json(response, 201);
+  return c.json(response, created ? 201 : 200);
+});
+
+// DELETE /v1/pages/:id - Delete a page
+pages.delete('/:id', async (c) => {
+  const id = c.req.param('id');
+  const subdomainHeader = c.req.header('X-Subdomain');
+  const subdomain = subdomainHeader ? subdomainHeader.toLowerCase() : undefined;
+
+  // Validate ID
+  const idError = validateId(id);
+  if (idError) {
+    return c.json({ error: idError.message }, 400);
+  }
+
+  // Get page
+  const page = subdomain ? getPage(id, subdomain) : getPage(id);
+  if (!page) {
+    return c.json({ error: 'Page not found' }, 404);
+  }
+
+  // If page has auth, verify password
+  if (page.auth?.passwordHash) {
+    const authHeader = c.req.header('Authorization');
+    const basicAuth = parseBasicAuth(authHeader);
+    const realm = subdomain ? `ZenBin-${subdomain}-${id}` : `ZenBin-${id}`;
+    
+    if (!basicAuth) {
+      c.header('WWW-Authenticate', `Basic realm="${realm}"`);
+      return c.json({ error: 'Authentication required to delete this page' }, 401);
+    }
+    
+    const validPassword = await verifyPassword(basicAuth.password, page.auth.passwordHash);
+    if (!validPassword) {
+      return c.json({ error: 'Invalid credentials' }, 401);
+    }
+  }
+
+  // Delete the page
+  const deleted = await deletePageFromDb(id, subdomain);
+  if (!deleted) {
+    return c.json({ error: 'Failed to delete page' }, 500);
+  }
+
+  // Decrement subdomain page count if applicable
+  if (subdomain) {
+    decrementSubdomainPageCount(subdomain);
+  }
+
+  return c.body(null, 204);
 });
 
 export { pages };

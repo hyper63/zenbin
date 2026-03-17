@@ -39,6 +39,12 @@ export const config = {
   // Analytics
   posthogKey: process.env.POSTHOG_KEY || '',
 
+  // Free Tier
+  freeTier: {
+    monthlyLimit: parseInt(process.env.FREE_TIER_MONTHLY_LIMIT || '100', 10),
+    monthlyWindowMs: parseInt(process.env.FREE_TIER_WINDOW_MS || '2592000000', 10), // 30 days
+  },
+
   // Subdomains
   subdomains: {
     enabled: process.env.SUBDOMAINS_ENABLED !== 'false', // default true
