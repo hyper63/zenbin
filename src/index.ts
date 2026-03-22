@@ -55,6 +55,39 @@ app.use('/api/proxy/*', verifyApiKey);
 // Well-known endpoints (for agent discoverability)
 app.route('/.well-known', wellKnown);
 
+// Robots.txt - Allow social media crawlers
+app.get('/robots.txt', (c) => {
+  const robotsTxt = `# Allow all crawlers to access public pages
+User-agent: *
+Allow: /p/
+Allow: /
+
+# Allow social media crawlers full access for link previews
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Pinterest
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+# Disallow API endpoints from indexing
+Disallow: /v1/
+Disallow: /api/
+
+Sitemap: ${config.baseUrl}/sitemap.xml
+`;
+  c.header('Content-Type', 'text/plain; charset=utf-8');
+  return c.body(robotsTxt);
+});
+
 // Health check
 app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -146,6 +179,7 @@ Server running at http://${info.address}:${info.port}
 
 Endpoints:
   GET  /                        - Landing page
+  GET  /robots.txt              - Robots.txt for crawlers
   GET  /.well-known/skill.md    - Agent instructions
   GET  /v1/stats                - Site statistics
   POST /v1/subdomains/{name}    - Claim a subdomain
@@ -156,6 +190,7 @@ Endpoints:
   GET  /p/{id}                  - Render page in browser
   GET  /p/{id}/raw              - Fetch raw HTML
   GET  /p/{id}/md               - Fetch markdown source
+  GET  /p/{id}/image            - Fetch image content
   GET  /{path} (subdomain)      - Render subdomain page
   GET  /api/agent               - Agent instructions (markdown)
   POST /api/proxy               - Proxy external requests (CORS bypass)
