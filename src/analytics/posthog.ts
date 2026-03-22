@@ -86,6 +86,7 @@ export function trackPageCreated(params: {
   hasAuth: boolean;
   contentType: string;
   hasMarkdown: boolean;
+  hasImage: boolean;
 }): void {
   if (!client) return;
 
@@ -98,6 +99,7 @@ export function trackPageCreated(params: {
       has_auth: params.hasAuth,
       content_type: params.contentType,
       has_markdown: params.hasMarkdown,
+      has_image: params.hasImage,
     },
   });
 }

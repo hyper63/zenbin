@@ -238,6 +238,7 @@ pages.post('/:id', async (c) => {
       hasAuth: !!authData,
       contentType: page.content_type || 'text/html',
       hasMarkdown: !!page.markdown,
+      hasImage: !!page.image,
     });
   }
 
