@@ -13,6 +13,7 @@ export interface Page {
   subdomain?: string;      // NEW: which subdomain owns this page
   html: string;
   markdown?: string;
+  image?: string;          // Base64-encoded image data
   encoding: 'utf-8' | 'base64';
   content_type: string;
   title?: string;
@@ -84,6 +85,7 @@ export async function savePage(
   data: {
     html?: string;
     markdown?: string;
+    image?: string;
     encoding?: 'utf-8' | 'base64';
     content_type?: string;
     title?: string;
@@ -104,6 +106,7 @@ export async function savePage(
     subdomain: data.subdomain,
     html: data.html || '',
     markdown: data.markdown,
+    image: data.image,
     encoding: data.encoding || 'utf-8',
     content_type: data.content_type || 'text/html; charset=utf-8',
     title: data.title,

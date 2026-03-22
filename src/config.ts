@@ -11,7 +11,17 @@ export const config = {
 
   // Limits
   maxPayloadSize: parseInt(process.env.MAX_PAYLOAD_SIZE || '524288', 10), // 512KB default
+  maxImageSize: parseInt(process.env.MAX_IMAGE_SIZE || '5242880', 10), // 5MB default
   maxIdLength: parseInt(process.env.MAX_ID_LENGTH || '128', 10),
+
+  // Image settings
+  allowedImageTypes: [
+    'image/png',
+    'image/jpeg',
+    'image/gif',
+    'image/webp',
+    'image/svg+xml',
+  ],
 
   // Rate Limiting
   rateLimitWindowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000', 10),

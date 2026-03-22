@@ -10,9 +10,11 @@ ZenBin is a lightweight web service that lets you publish HTML documents to uniq
 
 - **Simple API** — Store HTML by ID with a single POST request
 - **Markdown support** — Store markdown source alongside HTML, retrieve via `/md` endpoint or content negotiation
+- **Image support** — Upload images up to 5MB (PNG, JPEG, GIF, WebP, SVG)
 - **Instant rendering** — View pages at `/p/{id}` in any browser
 - **Raw access** — Fetch original HTML at `/p/{id}/raw`
 - **Markdown endpoint** — Fetch markdown source at `/p/{id}/md`
+- **Image endpoint** — Fetch images directly at `/p/{id}/image`
 - **Proxy endpoint** — Make external API calls from hosted pages (CORS bypass)
 - **Safe by default** — Sandboxed rendering with restrictive security headers
 - **ETag caching** — Efficient caching with `If-None-Match` support
@@ -50,6 +52,7 @@ Content-Type: application/json
 {
   "html": "<!doctype html><html><body>Hello World</body></html>",
   "markdown": "# Hello World\n\nThis is the markdown source.",
+  "image": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
   "title": "My Page",
   "encoding": "utf-8",
   "markdown_encoding": "utf-8",
@@ -59,12 +62,13 @@ Content-Type: application/json
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `html` | No* | HTML content (string). *At least one of `html` or `markdown` is required. |
-| `markdown` | No* | Markdown source content (string). *At least one of `html` or `markdown` is required. |
+| `html` | No* | HTML content (string). *At least one of `html`, `markdown`, or `image` is required. |
+| `markdown` | No* | Markdown source content (string). *At least one of `html`, `markdown`, or `image` is required. |
+| `image` | No* | Base64-encoded image data. *At least one of `html`, `markdown`, or `image` is required. |
 | `title` | No | Page title (metadata) |
 | `encoding` | No | `utf-8` (default) or `base64` for the `html` field |
 | `markdown_encoding` | No | `utf-8` (default) or `base64` for the `markdown` field |
-| `content_type` | No | Content-Type header (default: `text/html; charset=utf-8`) |
+| `content_type` | No | Content-Type header (default: `text/html; charset=utf-8`). Required for image pages. |
 | `auth` | No | Authentication settings (see [Page Authentication](#page-authentication)) |
 
 **Response:**
@@ -141,6 +145,36 @@ Accept: text/markdown
 ### Markdown-Only Pages
 
 If a page is created with only markdown (no HTML), `GET /p/{id}` automatically returns the markdown content with `Content-Type: text/markdown`.
+
+### Images
+
+Upload images up to 5MB. Supported formats: PNG, JPEG, GIF, WebP, SVG.
+
+**Create an image page:**
+
+```bash
+# Encode image to base64
+IMAGE_BASE64=$(base64 -i myimage.png | tr -d '\n')
+
+curl -X POST http://localhost:3000/v1/pages/my-logo \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"image\": \"$IMAGE_BASE64\",
+    \"content_type\": \"image/png\"
+  }"
+```
+
+**Access the image:**
+
+```bash
+# View in browser
+GET /p/my-logo
+
+# Explicit image endpoint
+GET /p/my-logo/image
+```
+
+The image is served with the correct `Content-Type` header. When a page has both `html` and `image`, the HTML is served at `/p/{id}` and the image at `/p/{id}/image`.
 
 ### Health Check
 
@@ -360,7 +394,8 @@ Configure via environment variables or `.env` file:
 | `HOST` | `0.0.0.0` | Server host |
 | `BASE_URL` | `http://localhost:3000` | Base URL for generated links |
 | `LMDB_PATH` | `./data/zenbin.lmdb` | Database path |
-| `MAX_PAYLOAD_SIZE` | `524288` | Max HTML size in bytes (512KB) |
+| `MAX_PAYLOAD_SIZE` | `524288` | Max HTML/markdown size in bytes (512KB) |
+| `MAX_IMAGE_SIZE` | `5242880` | Max image size in bytes (5MB) |
 | `MAX_ID_LENGTH` | `128` | Max page ID length |
 | `RATE_LIMIT_WINDOW_MS` | `60000` | Rate limit window (ms) |
 | `RATE_LIMIT_MAX_REQUESTS` | `100` | Max requests per window |

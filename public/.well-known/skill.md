@@ -98,12 +98,14 @@ Create or update a page.
 **Request Body:**
 - `html` (string, optional) - HTML content to render
 - `markdown` (string, optional) - Markdown source for documentation  
+- `image` (string, optional) - Base64-encoded image data (for dedicated image pages)
+- `content_type` (string, optional) - Content type (required for image pages)
 - `title` (string, optional) - Page title (used for SEO)
 - `auth` (object, optional) - Authentication settings
   - `password` (string) - Password required to view page
   - `urlToken` (boolean) - Generate secret shareable URL
 
-**Note:** At least one of `html` or `markdown` is required.
+**Note:** At least one of `html`, `markdown`, or `image` is required.
 
 **Updating Pages:**
 - Subdomain pages: Just POST again with same ID + `X-Subdomain` header
@@ -145,7 +147,40 @@ X-Subdomain: my-site                         # For subdomain pages
 
 Returns 204 No Content on success.
 
-**Maximum payload:** 512KB
+**Maximum payload:** 512KB for HTML/markdown, 5MB for images
+
+### Images
+
+ZenBin supports dedicated image pages. Upload an image and it's served directly with the correct content type.
+
+```
+POST /v1/pages/my-logo
+Content-Type: application/json
+
+{
+  "image": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "content_type": "image/png"
+}
+```
+
+**Supported formats:** `image/png`, `image/jpeg`, `image/gif`, `image/webp`, `image/svg+xml`
+
+**Maximum size:** 5MB
+
+**Viewing:**
+- `GET /p/{id}` - Serves the image directly with correct `Content-Type`
+- `GET /p/{id}/image` - Explicit image endpoint (also works for pages with both HTML and image)
+
+**Example - Multiple image gallery:**
+```
+# Upload images
+POST /v1/pages/photo1  → { "image": "...", "content_type": "image/jpeg" }
+POST /v1/pages/photo2  → { "image": "...", "content_type": "image/jpeg" }
+
+# View at https://my-site.zenbin.org/photo1
+```
+
+**Note:** Image pages are dedicated - if you provide both `html` and `image`, the HTML takes precedence for `GET /p/{id}`, but the image is still accessible at `GET /p/{id}/image`.
 
 #### GET /p/{id}
 

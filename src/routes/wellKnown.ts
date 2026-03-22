@@ -110,13 +110,15 @@ Create or replace a page.
 **Request Body:**
 - \`html\` (string, optional) - HTML content to render
 - \`markdown\` (string, optional) - Markdown source for documentation  
+- \`image\` (string, optional) - Base64-encoded image data (for dedicated image pages)
+- \`content_type\` (string, optional) - Content type (required for image pages)
 - \`title\` (string, optional) - Page title (used for SEO)
 - \`auth\` (object, optional) - Password protection
   - \`password\` (string) - Password required to view page
 
-**Note:** At least one of \`html\` or \`markdown\` is required.
+**Note:** At least one of \`html\`, \`markdown\`, or \`image\` is required.
 
-**Maximum payload:** 512KB
+**Maximum payload:** 512KB for HTML/markdown, 5MB for images
 
 #### GET /p/{id}
 
@@ -129,6 +131,28 @@ Get the raw HTML content as text/plain.
 #### GET /p/{id}/md
 
 Get the markdown source content (if provided during creation).
+
+### Images
+
+Upload images up to 5MB. Supported formats: PNG, JPEG, GIF, WebP, SVG.
+
+\`\`\`
+POST /v1/pages/my-logo
+Content-Type: application/json
+
+{
+  "image": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "content_type": "image/png"
+}
+\`\`\`
+
+**Maximum size:** 5MB
+
+**Supported formats:** \`image/png\`, \`image/jpeg\`, \`image/gif\`, \`image/webp\`, \`image/svg+xml\`
+
+#### GET /p/{id}/image
+
+Get the image content directly (for pages with images).
 
 ### Stats
 

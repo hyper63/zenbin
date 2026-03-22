@@ -1036,12 +1036,12 @@ const getHtml = () => `<!DOCTYPE html>
         <p class="feature-desc">store markdown alongside html. perfect for agent-generated docs.</p>
       </div>
       <div class="feature-card animate-on-scroll stagger-5">
-        <span class="feature-title">$ simple_rest</span>
-        <p class="feature-desc">one endpoint. POST html, get url. any agent can integrate.</p>
+        <span class="feature-title">$ image_support</span>
+        <p class="feature-desc">upload images up to 5mb. png, jpeg, gif, webp, svg — served directly.</p>
       </div>
       <div class="feature-card animate-on-scroll stagger-6">
-        <span class="feature-title">$ instant_live</span>
-        <p class="feature-desc">from agent code to live url in milliseconds. no build step.</p>
+        <span class="feature-title">$ simple_rest</span>
+        <p class="feature-desc">one endpoint. POST html, get url. any agent can integrate.</p>
       </div>
     </div>
   </section>

@@ -87,6 +87,7 @@ async function verifyPageAuth(c: Context, page: Page): Promise<Response | null> 
 }
 
 // GET /p/:id - Render page in browser
+// GET /p/:id/image - Serve image directly
 render.get('/:id', async (c) => {
   const id = c.req.param('id');
 
@@ -141,6 +142,32 @@ render.get('/:id', async (c) => {
     return c.body(page.markdown);
   }
 
+  // If page has image but no HTML, serve image directly
+  if (page.image && !page.html) {
+    const imgEtag = generateEtag(page.image);
+    const ifNoneMatch = c.req.header('If-None-Match');
+    if (etagMatches(ifNoneMatch, imgEtag)) {
+      return c.body(null, 304);
+    }
+
+    const imageBuffer = Buffer.from(page.image, 'base64');
+    
+    c.header('Content-Type', page.content_type);
+    c.header('Content-Disposition', `inline; filename="${id}"`);
+    c.header('ETag', imgEtag);
+    c.header('Cache-Control', 'public, max-age=0, must-revalidate');
+
+    // Track page view
+    trackPageView({
+      pageId: id,
+      referrer: c.req.header('Referer'),
+      userAgent: c.req.header('User-Agent'),
+      ip: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
+    });
+
+    return c.body(imageBuffer);
+  }
+
   // Check If-None-Match for caching HTML
   const ifNoneMatch = c.req.header('If-None-Match');
   if (etagMatches(ifNoneMatch, page.etag)) {
@@ -165,6 +192,53 @@ render.get('/:id', async (c) => {
   });
 
   return c.body(page.html);
+});
+
+// GET /p/:id/image - Serve image directly
+render.get('/:id/image', async (c) => {
+  const id = c.req.param('id');
+
+  const idError = validateId(id);
+  if (idError) {
+    return c.json({ error: idError.message }, 400);
+  }
+
+  const page = getPage(id);
+  if (!page) {
+    return c.json({ error: 'Page not found' }, 404);
+  }
+
+  const authResponse = await verifyPageAuth(c, page);
+  if (authResponse) {
+    return authResponse;
+  }
+
+  if (!page.image) {
+    return c.json({ error: 'Page has no image content' }, 404);
+  }
+
+  const imgEtag = generateEtag(page.image);
+  const ifNoneMatch = c.req.header('If-None-Match');
+  if (etagMatches(ifNoneMatch, imgEtag)) {
+    return c.body(null, 304);
+  }
+
+  const imageBuffer = Buffer.from(page.image, 'base64');
+
+  c.header('Content-Type', page.content_type);
+  c.header('Content-Disposition', `inline; filename="${id}"`);
+  c.header('ETag', imgEtag);
+  c.header('Cache-Control', 'public, max-age=0, must-revalidate');
+
+  // Track page view (image)
+  trackPageView({
+    pageId: id,
+    referrer: c.req.header('Referer'),
+    userAgent: c.req.header('User-Agent'),
+    ip: c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP'),
+  });
+
+  return c.body(imageBuffer);
 });
 
 // GET /p/:id/md - Return markdown source

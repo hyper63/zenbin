@@ -537,6 +537,23 @@ export async function serveSubdomainPage(c: any, subdomain: string, path: string
     return authResponse;
   }
   
+  // If page has image but no HTML, serve image directly
+  if (page.image && !page.html) {
+    const imgEtag = generateEtag(page.image);
+    const ifNoneMatch = c.req.header('If-None-Match');
+    if (etagMatches(ifNoneMatch, imgEtag)) {
+      return c.body(null, 304);
+    }
+
+    const imageBuffer = Buffer.from(page.image, 'base64');
+    
+    c.header('Content-Type', page.content_type);
+    c.header('ETag', imgEtag);
+    c.header('Cache-Control', 'public, max-age=0, must-revalidate');
+    
+    return c.body(imageBuffer);
+  }
+  
   // Check If-None-Match for caching
   const ifNoneMatch = c.req.header('If-None-Match');
   if (etagMatches(ifNoneMatch, page.etag)) {

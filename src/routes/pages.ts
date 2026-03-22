@@ -14,6 +14,7 @@ const pages = new Hono();
 interface CreatePageBody {
   html?: string;
   markdown?: string;
+  image?: string;
   encoding?: 'utf-8' | 'base64';
   markdown_encoding?: 'utf-8' | 'base64';
   content_type?: string;
@@ -132,8 +133,11 @@ pages.post('/:id', async (c) => {
     ? decodeMarkdown(body.markdown, body.markdown_encoding || body.encoding) 
     : undefined;
 
+  // Image is stored as base64 (validated already)
+  const imageData = body.image;
+
   // Generate ETag from combined content
-  const etagContent = (decodedHtml || '') + (decodedMarkdown || '');
+  const etagContent = (decodedHtml || '') + (decodedMarkdown || '') + (imageData || '');
   const etag = generateEtag(etagContent);
 
   // Process auth if provided
@@ -160,6 +164,7 @@ pages.post('/:id', async (c) => {
     {
       html: decodedHtml,
       markdown: decodedMarkdown,
+      image: imageData,
       encoding: 'utf-8',
       content_type: body.content_type,
       title: body.title,

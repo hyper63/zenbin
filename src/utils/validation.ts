@@ -82,23 +82,61 @@ export function validatePageBody(body: unknown): ValidationError | null {
     }
   }
 
-  // At least one of html or markdown must be provided
-  if (!data.html && !data.markdown) {
-    return { field: 'body', message: 'At least one of html or markdown is required' };
+  // Validate image field if provided
+  let imageSize = 0;
+  if (data.image !== undefined) {
+    if (typeof data.image !== 'string') {
+      return { field: 'image', message: 'image must be a base64-encoded string' };
+    }
+    try {
+      const decoded = Buffer.from(data.image as string, 'base64');
+      imageSize = decoded.length;
+    } catch {
+      return { field: 'image', message: 'Invalid base64 encoding for image' };
+    }
+    if (imageSize > config.maxImageSize) {
+      return { 
+        field: 'image', 
+        message: `Image size exceeds maximum of ${config.maxImageSize} bytes` 
+      };
+    }
   }
 
-  // Check combined size
+  // At least one of html, markdown, or image must be provided
+  if (!data.html && !data.markdown && !data.image) {
+    return { field: 'body', message: 'At least one of html, markdown, or image is required' };
+  }
+
+  // For image-only pages, validate content_type is an image type
+  const isImagePage = data.image && !data.html && !data.markdown;
+  if (isImagePage) {
+    const contentType = data.content_type as string | undefined;
+    if (!contentType) {
+      return { field: 'content_type', message: 'content_type is required for image pages' };
+    }
+    if (typeof contentType !== 'string') {
+      return { field: 'content_type', message: 'content_type must be a string' };
+    }
+    if (!(config.allowedImageTypes as readonly string[]).includes(contentType)) {
+      return { 
+        field: 'content_type', 
+        message: `content_type must be one of: ${config.allowedImageTypes.join(', ')}` 
+      };
+    }
+  }
+
+  // If both html/markdown and image are provided, content_type must still be valid
+  if (data.content_type !== undefined && typeof data.content_type !== 'string') {
+    return { field: 'content_type', message: 'content_type must be a string' };
+  }
+
+  // Check combined size for html/markdown
   const totalSize = htmlSize + markdownSize;
   if (totalSize > config.maxPayloadSize) {
     return { 
       field: 'body', 
       message: `Combined content size exceeds maximum of ${config.maxPayloadSize} bytes` 
     };
-  }
-
-  // Validate content_type if provided
-  if (data.content_type !== undefined && typeof data.content_type !== 'string') {
-    return { field: 'content_type', message: 'content_type must be a string' };
   }
 
   // Validate title if provided
